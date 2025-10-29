@@ -213,9 +213,9 @@ void PID_Init(void)
   speed_pid_left.kd = 0.5f;
   speed_pid_left.target = 500;
 
-  speed_pid_right.kp = 6.0f;
-  speed_pid_right.ki = 0.1f;
-  speed_pid_right.kd = 0.5f;
+  speed_pid_right.kp = 0.0f;
+  speed_pid_right.ki = 0.0f;
+  speed_pid_right.kd = 0.0f;
   speed_pid_right.target = 0;
 }
 
