@@ -1,0 +1,3 @@
+D:\ruanjian\cmake\bin\cmake.exe -E rm -f CMakeFiles\micro_smartcar.dir/objects.a
+D:\ruanjian\mingw64\bin\ar.exe qc CMakeFiles\micro_smartcar.dir/objects.a @CMakeFiles\micro_smartcar.dir\objects1.rsp
+D:\ruanjian\mingw64\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\micro_smartcar.dir/objects.a -Wl,--no-whole-archive -o micro_smartcar.exe -Wl,--out-implib,libmicro_smartcar.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\micro_smartcar.dir\linkLibs.rsp
