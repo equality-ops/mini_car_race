@@ -1,8 +1,2 @@
-*** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
-Build target 'micro_smartcar'
-compiling main.c...
-linking...
-Program Size: Code=23940 RO-data=8580 RW-data=32 ZI-data=10208  
-FromELF: creating hex file...
-"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 0 Warning(s).
-Build Time Elapsed:  00:00:03
+Load "micro_smartcar\\micro_smartcar.axf" 
+Erase Done.Programming Done.Verify OK.Flash Load finished at 01:26:00

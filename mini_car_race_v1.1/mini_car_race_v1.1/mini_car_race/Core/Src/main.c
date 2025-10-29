@@ -26,6 +26,7 @@
 #include "multiplexer.h" //多路复用器驱动，用于读取光电管读数
 #include "stdio.h"
 #include "math.h"
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +50,11 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12        // 光电管数量
 #define integralLimit 20000 // 积分最大值
 #define FILTER_SIZE 5       // 滤波窗口数量
-#define BASE_SPEED 1500   // 基础速度
+#define BASE_SPEED 100   // 基础速度
+#define OUTPUTMAX 5400
+#define OUTPUTMIN -5400
+#define FINAL_OUTPUTMAX 5400
+#define FINAL_OUTPUTMIN -5400
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -82,7 +87,7 @@ int16_t Left_pwm = 0, Right_pwm = 0;                         // 左右电机输�
 
 static uint32_t count = 0;              // 时间计数器
 static int32_t weighted_sum_record = 0; // 上一次光电管误差记录
-enum which{LEFT,RIGHT};
+enum which{LEFT,RIGHT,TURN=1};
 enum which motor;
 PID speed_pid_left, speed_pid_right;
 PID direction_pid;
@@ -127,18 +132,11 @@ int32_t Calculate_Photo_Error(void)
 }
 
 // 参数说明：nowError当前误差，preError上次误差，prepreError上上次误差，kd微分系数，judge判断是增量式还是位置式PID，judge=1位置式，judge=0增量式
-float filtered_derivative(int32_t nowError, int32_t preError, int32_t prepreError, float kd, float diff_buffer[], uint8_t judge)
+float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
 { // 微分缓冲滤波函数
   float raw_diff = 0;
   // 更新目前的微分项
-  if (judge == 1)
-  {
     raw_diff = kd * (nowError - preError);
-  }
-  else
-  {
-    raw_diff = kd * (nowError - 2 * preError + prepreError);
-  }
   // 更新滑动窗口
   diff_buffer[buf_index] = raw_diff;
   buf_index = (buf_index + 1) % FILTER_SIZE;
@@ -152,14 +150,23 @@ float filtered_derivative(int32_t nowError, int32_t preError, int32_t prepreErro
   return sum / FILTER_SIZE;
 }
 
-void ComeputePID_Position(PID *pid, int16_t actual)
-{ // 转向环控制
+// 参数解释：pid PID结构体指针，actual 实际位置，judge 判断是转向环还是速度环，judge=1 转向环，judge=0 速度环，motor 电机选择,LEFT左电机，RIGHT右电机
+void ComeputePID_Position(PID *pid, int16_t actual,uint8_t judge,uint8_t motor)
+{ 
   pid->actual=actual;
   pid->preError = pid->nowError;
   pid->nowError = pid->target - pid->actual;
   pid->integral += pid->nowError;
-  pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_position, 1);
-
+  if(judge==1){
+  pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position);
+  }else{
+    if(motor==LEFT){
+      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_L);
+    }
+    else if(motor==RIGHT){
+      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_R);
+    }
+  }
   if (pid->integral > integralLimit)
   {
     pid->integral = integralLimit;
@@ -169,58 +176,58 @@ void ComeputePID_Position(PID *pid, int16_t actual)
     pid->integral = -integralLimit;
   }
 
-  pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->kd * pid->derivative;
+  pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->derivative;
 
-  if(pid->output > 1800){
-    pid->output=1800;
+  if(pid->output > OUTPUTMAX){
+    pid->output=OUTPUTMAX;
   }
-  else if(pid->output < -1800){
-    pid->output=-1800;
+  else if(pid->output < OUTPUTMIN){
+    pid->output=OUTPUTMIN;
   }
   
 }
 
 
-// 参数解释：pid PID结构体指针，actual 实际速度，motor 电机选择,LEFT左电机，RIGHT右电机
-void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
-{ //速度环控制
-  pid->actual=actual;
-  pid->prepreError = pid->preError;
-  pid->preError = pid->nowError;
-  pid->nowError = pid->target - pid->actual;
-  pid->integral = pid->nowError;
-  if (motor == LEFT)
-  {
-    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_incremental_L, 0);
-  }
-  else if (motor == RIGHT)
-  {
-    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_incremental_R, 0);
-  } 
+// // 参数解释：pid PID结构体指针，actual 实际速度，motor 电机选择,LEFT左电机，RIGHT右电机
+// void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
+// { //速度环控制
+//   pid->actual=actual;
+//   pid->prepreError = pid->preError;
+//   pid->preError = pid->nowError;
+//   pid->nowError = pid->target - pid->actual;
+//   pid->integral = pid->nowError;
+//   if (motor == LEFT)
+//   {
+//     pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_incremental_L, 0);
+//   }
+//   else if (motor == RIGHT)
+//   {
+//     pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_incremental_R, 0);
+//   } 
 
-  //变速积分：误差大时削弱ki的影响
-  float coefficient=1.0f;
-  if(fabs(pid->nowError)>800){
-    coefficient=0.0f;
-  }else if(fabs(pid->nowError)>200){
-    coefficient=(800-fabs(pid->nowError))/600.0f;
-  }
+//   //变速积分：误差大时削弱ki的影响
+//   float coefficient=1.0f;
+//   if(fabs(pid->nowError)>1400){
+//     coefficient=0.0f;
+//   }else if(fabs(pid->nowError)>200){
+//     coefficient=(1400-fabs(pid->nowError))/1200.0f;
+//   }
   
-  // 计算增量输出
-  int32_t delta_output=pid->kp * (pid->nowError - pid->preError) + pid->ki * pid->integral * coefficient+ pid->kd * pid->derivative;
+//   // 计算增量输出
+//   int32_t delta_output=pid->kp * (pid->nowError - pid->preError) + pid->ki * pid->integral * coefficient+ pid->kd * pid->derivative;
   
-  // 总输出限幅
-  if(pid->output + delta_output > 1800){
-    pid->output=1800;
-  }
-  else if(pid->output + delta_output < -1800){
-    pid->output=-1800;
-  }
-  else{
-    pid->output += delta_output;
-  }
+//   // 总输出限幅
+//   if(pid->output + delta_output > 1800){
+//     pid->output=1800;
+//   }
+//   else if(pid->output + delta_output < -1800){
+//     pid->output=-1800;
+//   }
+//   else{
+//     pid->output += delta_output;
+//   }
 
-}
+// }
 
 //参数说明：motor 电机选择
 void Compute_target(uint8_t motor)
@@ -241,15 +248,15 @@ void PID_Init(void)
   direction_pid.kd = 0.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 6.0f;
-  speed_pid_left.ki = 0.1f;
-  speed_pid_left.kd = 0.5f;
-  speed_pid_left.target = 0;
+  speed_pid_left.kp = 60.0f;
+  speed_pid_left.ki = 0.0f;
+  speed_pid_left.kd = 0.0f;
+  speed_pid_left.target = BASE_SPEED;
 
-  speed_pid_right.kp = 0.0f;
+  speed_pid_right.kp = 5.0f;
   speed_pid_right.ki = 0.0f;
   speed_pid_right.kd = 0.0f;
-  speed_pid_right.target = 0;
+  speed_pid_right.target = BASE_SPEED;
 }
 
 void Turn_control(void)
@@ -264,14 +271,14 @@ void Turn_control(void)
     }
 
     Direction_actual = photo_error;
-    ComeputePID_Position(&direction_pid, Direction_actual);
+    ComeputePID_Position(&direction_pid, Direction_actual, 1, TURN);
   }
 }
 
 
 void Speed_Control(void) 
 { // 速度环控制
-  if (count % 4 == 0)
+  if (count % 2 == 0)
   {                                                      
     Left_actual = (int16_t)__HAL_TIM_GET_COUNTER(&htim4); // 获取当前速度
     Right_actual = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
@@ -279,29 +286,29 @@ void Speed_Control(void)
     __HAL_TIM_SET_COUNTER(&htim4, 0);// 重置计数器
     __HAL_TIM_SET_COUNTER(&htim3, 0);
 
-    ComeputePID_Incremental(&speed_pid_left, Left_actual, LEFT); //
-    ComeputePID_Incremental(&speed_pid_right, Right_actual, RIGHT);
+    ComeputePID_Position(&speed_pid_left, Left_actual, 0, LEFT); //
+    ComeputePID_Position(&speed_pid_right, Right_actual, 0, RIGHT);
   }
 
-  Left_pwm = speed_pid_left.output + direction_pid.output;
-  Right_pwm = speed_pid_right.output - direction_pid.output;
+  Left_pwm = speed_pid_left.output;
+  Right_pwm = speed_pid_right.output;
 
-  if (Left_pwm > 3600)
+  if (Left_pwm > FINAL_OUTPUTMAX)
   { // 输出限幅
-    Left_pwm = 3600;
+    Left_pwm = FINAL_OUTPUTMAX;
   }
-  else if (Left_pwm < -3600)
+  else if (Left_pwm < FINAL_OUTPUTMIN)
   {
-    Left_pwm = -3600;
+    Left_pwm = FINAL_OUTPUTMIN;
   }
 
-  if (Right_pwm > 3600)
+  if (Right_pwm > FINAL_OUTPUTMAX)
   { // 输出限幅
-    Right_pwm = 3600;
+    Right_pwm = FINAL_OUTPUTMAX;
   }
-  else if (Right_pwm < -3600)
+  else if (Right_pwm < FINAL_OUTPUTMIN)
   {
-    Right_pwm = -3600;
+    Right_pwm = FINAL_OUTPUTMIN;
   }
 }
 
@@ -347,15 +354,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 { // 定时器中断
   if (htim == &htim2)
   {
-    Turn_control();
-    Compute_target(LEFT);
-    Compute_target(RIGHT);
+    //Turn_control();
+    //Compute_target(LEFT);
+    //Compute_target(RIGHT);
     Speed_Control();
     Set_Motor_PWM(LEFT, Left_pwm);
     Set_Motor_PWM(RIGHT, Right_pwm);
     detect=Calculate_Photo_Error();
-    printf("%d\r\n",detect);
-    //printf("%d,%d,%d,%d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.target, speed_pid_right.target);
+    printf("%d %d %d %d %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual,speed_pid_left.output, speed_pid_right.output, speed_pid_left.target,speed_pid_right.target);
       count++;
   if (count > 1000)
   {
