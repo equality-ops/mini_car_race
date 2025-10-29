@@ -188,6 +188,7 @@ void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
   pid->prepreError = pid->preError;
   pid->preError = pid->nowError;
   pid->nowError = pid->target - pid->actual;
+  pid->integral = pid->nowError;
   if (motor == LEFT)
   {
     pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_incremental_L, 0);
@@ -204,11 +205,11 @@ void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
   }else if(fabs(pid->nowError)>200){
     coefficient=(800-fabs(pid->nowError))/600.0f;
   }
-
-  pid->integral = pid->nowError;
   
+  // 计算增量输出
   int32_t delta_output=pid->kp * (pid->nowError - pid->preError) + pid->ki * pid->integral * coefficient+ pid->kd * pid->derivative;
   
+  // 总输出限幅
   if(pid->output + delta_output > 1800){
     pid->output=1800;
   }
@@ -251,8 +252,9 @@ void PID_Init(void)
   speed_pid_right.target = 0;
 }
 
-void Turn_control(void){
-  if (count % 20 == 0)// 转向环控制
+void Turn_control(void)
+{// 转向环控制
+  if (count % 20 == 0)
   { 
     int32_t photo_error = Calculate_Photo_Error();
 
@@ -267,15 +269,14 @@ void Turn_control(void){
 }
 
 
-void Speed_Control(void) // 主控制函数，计算左右电机应输出的pwm值
-{ 
-
-  if (count % 4 == 0)// 速度环控制
+void Speed_Control(void) 
+{ // 速度环控制
+  if (count % 4 == 0)
   {                                                      
     Left_actual = (int16_t)__HAL_TIM_GET_COUNTER(&htim4); // 获取当前速度
     Right_actual = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
 
-    __HAL_TIM_SET_COUNTER(&htim4, 0);
+    __HAL_TIM_SET_COUNTER(&htim4, 0);// 重置计数器
     __HAL_TIM_SET_COUNTER(&htim3, 0);
 
     ComeputePID_Incremental(&speed_pid_left, Left_actual, LEFT); //
