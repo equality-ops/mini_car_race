@@ -48,6 +48,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12        // 光电管数量
 #define integralLimit 20000 // 积分最大值
 #define FILTER_SIZE 5       // 滤波窗口数量
+#define BASE_SPEED 1500   // 基础速度
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -123,6 +124,7 @@ int32_t Calculate_Photo_Error(void)
   weighted_sum_record = weighted_sum; // 记录光电管误差
   return weighted_sum;                // 返回光电管误差
 }
+
 // 参数说明：nowError当前误差，preError上次误差，prepreError上上次误差，kd微分系数，judge判断是增量式还是位置式PID，judge=1位置式，judge=0增量式
 float filtered_derivative(int32_t nowError, int32_t preError, int32_t prepreError, float kd, float diff_buffer[], uint8_t judge)
 { // 微分缓冲滤波函数
@@ -169,6 +171,7 @@ void ComeputePID_Position(PID *pid, int16_t actual)
   pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->kd * pid->derivative;
 }
 
+
 // 参数解释：pid PID结构体指针，actual 实际速度，motor 电机选择,LEFT左电机，RIGHT右电机
 void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
 { //速度环控制
@@ -189,17 +192,29 @@ void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
   
   int32_t delta_output=pid->kp * (pid->nowError - pid->preError) + pid->ki * pid->integral + pid->kd * pid->derivative;
   
-  if(pid->output + delta_output > 3600){
-    pid->output=3600;
+  if(pid->output + delta_output > 1800){
+    pid->output=1800;
   }
-  else if(pid->output + delta_output < -3600){
-    pid->output=-3600;
+  else if(pid->output + delta_output < -1800){
+    pid->output=-1800;
   }
   else{
     pid->output += delta_output;
   }
 
 }
+
+//参数说明：motor 电机选择
+void Compute_target(uint8_t motor)
+{//计算电机的目标速度
+  if(motor==LEFT){
+    speed_pid_left.target=BASE_SPEED+direction_pid.output;
+  }
+  else if(motor==RIGHT){
+    speed_pid_right.target=BASE_SPEED-direction_pid.output;
+  }
+}
+
 
 void PID_Init(void)
 { // 初始化PID参数
@@ -211,7 +226,7 @@ void PID_Init(void)
   speed_pid_left.kp = 6.0f;
   speed_pid_left.ki = 0.1f;
   speed_pid_left.kd = 0.5f;
-  speed_pid_left.target = 500;
+  speed_pid_left.target = 0;
 
   speed_pid_right.kp = 0.0f;
   speed_pid_right.ki = 0.0f;
@@ -219,21 +234,7 @@ void PID_Init(void)
   speed_pid_right.target = 0;
 }
 
-void Motor_Control(void) // 主控制函数，计算左右电机应输出的pwm值
-{ 
-
-  if (count % 2 == 0)// 速度环控制
-  {                                                      
-    Left_actual = (int16_t)__HAL_TIM_GET_COUNTER(&htim4); // 获取当前速度
-    Right_actual = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
-
-    __HAL_TIM_SET_COUNTER(&htim4, 0);
-    __HAL_TIM_SET_COUNTER(&htim3, 0);
-
-    ComeputePID_Incremental(&speed_pid_left, Left_actual, LEFT); //
-    ComeputePID_Incremental(&speed_pid_right, Right_actual, RIGHT);
-  }
-
+void Turn_control(void){
   if (count % 20 == 0)// 转向环控制
   { 
     int32_t photo_error = Calculate_Photo_Error();
@@ -245,6 +246,23 @@ void Motor_Control(void) // 主控制函数，计算左右电机应输出的pwm�
 
     Direction_actual = photo_error;
     ComeputePID_Position(&direction_pid, Direction_actual);
+  }
+}
+
+
+void Speed_Control(void) // 主控制函数，计算左右电机应输出的pwm值
+{ 
+
+  if (count % 4 == 0)// 速度环控制
+  {                                                      
+    Left_actual = (int16_t)__HAL_TIM_GET_COUNTER(&htim4); // 获取当前速度
+    Right_actual = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
+
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+
+    ComeputePID_Incremental(&speed_pid_left, Left_actual, LEFT); //
+    ComeputePID_Incremental(&speed_pid_right, Right_actual, RIGHT);
   }
 
   Left_pwm = speed_pid_left.output + direction_pid.output;
@@ -266,12 +284,6 @@ void Motor_Control(void) // 主控制函数，计算左右电机应输出的pwm�
   else if (Right_pwm < -3600)
   {
     Right_pwm = -3600;
-  }
-
-  count++;
-  if (count > 1000)
-  {
-    count = 1;
   }
 }
 
@@ -317,12 +329,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 { // 定时器中断
   if (htim == &htim2)
   {
-    Motor_Control();
+    Turn_control();
+    Compute_target(LEFT);
+    Compute_target(RIGHT);
+    Speed_Control();
     Set_Motor_PWM(LEFT, Left_pwm);
     Set_Motor_PWM(RIGHT, Right_pwm);
     detect=Calculate_Photo_Error();
     printf("%d\r\n",detect);
     //printf("%d,%d,%d,%d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.target, speed_pid_right.target);
+      count++;
+  if (count > 1000)
+  {
+    count = 1;
+  }
   }
 }
 
