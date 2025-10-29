@@ -25,6 +25,7 @@
 #include "dodo_BMI270.h" //陀螺仪驱动
 #include "multiplexer.h" //多路复用器驱动，用于读取光电管读数
 #include "stdio.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -169,6 +170,14 @@ void ComeputePID_Position(PID *pid, int16_t actual)
   }
 
   pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->kd * pid->derivative;
+
+  if(pid->output > 1800){
+    pid->output=1800;
+  }
+  else if(pid->output < -1800){
+    pid->output=-1800;
+  }
+  
 }
 
 
@@ -186,11 +195,19 @@ void ComeputePID_Incremental(PID *pid, int16_t actual, uint8_t motor)
   else if (motor == RIGHT)
   {
     pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->prepreError, pid->kd, diff_buffer_incremental_R, 0);
+  } 
+
+  //变速积分：误差大时削弱ki的影响
+  float coefficient=1.0f;
+  if(fabs(pid->nowError)>800){
+    coefficient=0.0f;
+  }else if(fabs(pid->nowError)>200){
+    coefficient=(800-fabs(pid->nowError))/600.0f;
   }
 
   pid->integral = pid->nowError;
   
-  int32_t delta_output=pid->kp * (pid->nowError - pid->preError) + pid->ki * pid->integral + pid->kd * pid->derivative;
+  int32_t delta_output=pid->kp * (pid->nowError - pid->preError) + pid->ki * pid->integral * coefficient+ pid->kd * pid->derivative;
   
   if(pid->output + delta_output > 1800){
     pid->output=1800;
