@@ -104,8 +104,8 @@ int32_t Calculate_Photo_Error(void)
 { // 光电管误差计算函数
   int16_t valid_count = 0;
   int16_t weighted_sum = 0;
-  uint16_t photo_value;
-
+  uint16_t photo_value=0;
+  
   MUX_get_value(&photo_value);
 
   for (int i = 0; i < PHOTO_NUM; i++)
