@@ -3,19 +3,19 @@
         {
             "name": "micro_smartcar",
             "includePath": [
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Core\\Inc",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\STM32F1xx_HAL_Driver\\Inc",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\STM32F1xx_HAL_Driver\\Inc\\Legacy",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\CMSIS\\Device\\ST\\STM32F1xx\\Include",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\CMSIS\\Include",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Core\\code",
-                "D:\\ruanjian\\keil\\ARM\\ARMCLANG\\include",
-                "D:\\ruanjian\\keil\\ARM\\ARMCLANG\\include\\arm_linux",
-                "D:\\ruanjian\\keil\\ARM\\ARMCLANG\\include\\arm_linux_compat",
-                "D:\\ruanjian\\keil\\ARM\\ARMCLANG\\include\\libcxx",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\MDK-ARM",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Core\\Src",
-                "d:\\Users\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\STM32F1xx_HAL_Driver\\Src"
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Core\\Inc",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\STM32F1xx_HAL_Driver\\Inc",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\STM32F1xx_HAL_Driver\\Inc\\Legacy",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\CMSIS\\Device\\ST\\STM32F1xx\\Include",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\CMSIS\\Include",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Core\\code",
+                "D:\\kail\\ARM\\ARMCLANG\\include",
+                "D:\\kail\\ARM\\ARMCLANG\\include\\arm_linux",
+                "D:\\kail\\ARM\\ARMCLANG\\include\\arm_linux_compat",
+                "D:\\kail\\ARM\\ARMCLANG\\include\\libcxx",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\MDK-ARM",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Core\\Src",
+                "d:\\car_race\\mini_car_race\\mini_car_race_v1.1\\mini_car_race_v1.1\\mini_car_race\\Drivers\\STM32F1xx_HAL_Driver\\Src"
             ],
             "defines": [
                 "USE_HAL_DRIVER",
