@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "bmi270_port.h": "c",
-        "stm32f1xx_hal.h": "c"
+        "stm32f1xx_hal.h": "c",
+        "limits": "c",
+        "type_traits": "c"
     }
 }

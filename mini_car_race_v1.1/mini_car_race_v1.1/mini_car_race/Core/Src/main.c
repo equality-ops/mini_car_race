@@ -312,8 +312,10 @@ void Speed_Control(void)
   Left_pwm = speed_pid_left.output + direction_pid.output;
   Right_pwm = speed_pid_right.output - direction_pid.output;
 
+  /* 最终输出限幅（包含负数情况） */
+  /* 限幅：避免嵌套三目运算，增强可读性 */
   if (Left_pwm > FINAL_OUTPUTMAX)
-  { // 最终输出限幅
+  {
     Left_pwm = FINAL_OUTPUTMAX;
   }
   else if (Left_pwm < FINAL_OUTPUTMIN)
@@ -322,7 +324,7 @@ void Speed_Control(void)
   }
 
   if (Right_pwm > FINAL_OUTPUTMAX)
-  { // 最终输出限幅
+  {
     Right_pwm = FINAL_OUTPUTMAX;
   }
   else if (Right_pwm < FINAL_OUTPUTMIN)
@@ -379,7 +381,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Speed_Control();
     Set_Motor_PWM(LEFT_MOTOR, Left_pwm);
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
-    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    printf("%d %d %d %d %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     count++;
     if (count > 1000)
     {
