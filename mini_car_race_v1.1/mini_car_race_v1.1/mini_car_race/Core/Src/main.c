@@ -181,14 +181,26 @@ void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
   }
 
   // 变速积分
-  float coefficient = 1.0f;
-  if (pid->integral > pid->A)
+  // 变速积分（处理正负积分）
   {
-    coefficient = 0.0f;
-  }
-  else if (pid->integral > pid->B)
-  {
-    coefficient = (pid->A - pid->integral) / (pid->A - pid->B);
+    float abs_integral = fabsf((float)pid->integral);
+    float coefficient = 1.0f;
+    if (pid->A == pid->B)
+    {
+      coefficient = (abs_integral > pid->A) ? 0.0f : 1.0f; // 避免除以0
+    }
+    else
+    {
+      if (abs_integral > pid->A)
+      {
+        coefficient = 0.0f; // 如果绝对值超过A，积分清零
+      }
+      else if (abs_integral > pid->B)
+      {
+        coefficient = (pid->A - abs_integral) / (pid->A - pid->B); // 如果绝对值在B到A之间，线性衰减
+      }
+    }
+    pid->integral = (int32_t)((float)pid->integral * coefficient); // 应用系数（保留符号）
   }
 
   // 计算output
