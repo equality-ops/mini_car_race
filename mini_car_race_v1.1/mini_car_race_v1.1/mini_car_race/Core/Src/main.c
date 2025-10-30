@@ -40,28 +40,28 @@ typedef struct PIDcontrol
   int32_t integral;
   float derivative;
   float kp, ki, kd;
-  float A,B;// 变速积分阈值
+  float A, B; // 变速积分阈值
   float output;
 } PID;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PHOTO_NUM 12           // 光电管数量
-#define integralLimit 20000    // 积分最大值
-#define FILTER_SIZE 5          // 滤波窗口数量
-#define BASE_SPEED 100         // 基础速度
-#define LEFT_OUTPUTMAX 5400         // 左电机速度环输出最大值
-#define LEFT_OUTPUTMIN -5400        // 左电机速度环输出最小值
-#define RIGHT_OUTPUTMAX 1800         // 右电机速度环输出最大值
-#define RIGHT_OUTPUTMIN -1800        // 右电机速度环输出最小值
+#define PHOTO_NUM 12          // 光电管数量
+#define integralLimit 20000   // 积分最大值
+#define FILTER_SIZE 5         // 滤波窗口数量
+#define BASE_SPEED 100        // 基础速度
+#define LEFT_OUTPUTMAX 5400   // 左电机速度环输出最大值
+#define LEFT_OUTPUTMIN -5400  // 左电机速度环输出最小值
+#define RIGHT_OUTPUTMAX 1800  // 右电机速度环输出最大值
+#define RIGHT_OUTPUTMIN -1800 // 右电机速度环输出最小值
 #define TURN_OUTPUTMAX 3000   // 转向环输出最大值
 #define TURN_OUTPUTMIN -3000  // 转向环输出最小值
-#define FINAL_OUTPUTMAX 5400   // 最终输出最大值
-#define FINAL_OUTPUTMIN -5400  // 最终输出最小值
+#define FINAL_OUTPUTMAX 5400  // 最终输出最大值
+#define FINAL_OUTPUTMIN -5400 // 最终输出最小值
 #define LEFT_MOTOR -1         // 左电机标志
-#define RIGHT_MOTOR 1        // 右电机标志
-#define TURN 0               // 转向环标志
+#define RIGHT_MOTOR 1         // 右电机标志
+#define TURN 0                // 转向环标志
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -87,10 +87,10 @@ static float diff_buffer_position[FILTER_SIZE] = {0};
 static float diff_buffer_incremental_L[FILTER_SIZE] = {0};
 static float diff_buffer_incremental_R[FILTER_SIZE] = {0};
 
-static int16_t buf_index = 0; // 索引
+static int16_t buf_index = 0; // 缓冲区索引
 
-int16_t Left_actual = 0, Right_actual = 0, Direction_actual=0; // 左右电机实际速度
-int16_t Left_pwm = 0, Right_pwm = 0;                         // 左右电机输出的pwm
+int16_t Left_actual = 0, Right_actual = 0, Direction_actual = 0; // 左右电机实际速度
+int16_t Left_pwm = 0, Right_pwm = 0;                             // 左右电机输出的pwm
 
 static uint32_t count = 0;              // 时间计数器
 static int32_t weighted_sum_record = 0; // 上一次光电管误差记录
@@ -116,8 +116,8 @@ float Calculate_Photo_Error(void)
 { // 光电管误差计算函数
   int16_t valid_count = 0;
   int16_t weighted_sum = 0;
-  uint16_t photo_value=0;
-  
+  uint16_t photo_value = 0;
+
   MUX_get_value(&photo_value);
 
   for (int i = 0; i < PHOTO_NUM; i++)
@@ -133,11 +133,11 @@ float Calculate_Photo_Error(void)
   {              // 特殊值表示丢线
     return 9999; // 丢线直接退出，防止weighted_sum_record被更新为9999
   }
-  weighted_sum_record = (float)weighted_sum/valid_count; // 记录光电管误差
-  return weighted_sum_record;                // 返回光电管误差
+  weighted_sum_record = (float)weighted_sum / valid_count; // 记录光电管误差
+  return weighted_sum_record;                              // 返回光电管误差
 }
 
-// 参数说明：nowError当前误差，preError上次误差，prepreError上上次误差，kd微分系数，judge判断是增量式还是位置式PID，judge=1位置式，judge=0增量式
+// 参数说明：nowError 当前误差，preError 上次误差，kd 微分系数，diff_buffer 滤波缓冲区
 float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
 { // 微分缓冲滤波函数
   float raw_diff = 0;
@@ -156,77 +156,92 @@ float filtered_derivative(int32_t nowError, int32_t preError, float kd, float di
   return sum / FILTER_SIZE;
 }
 
-
 // 参数解释：pid PID结构体指针，actual 实际位置，judge 判断操作对象
-void ComeputePID_Position(PID *pid, int16_t actual,int8_t judge)
-{ 
-  pid->actual=actual;
+void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
+{
+  pid->actual = actual;
   pid->preError = pid->nowError;
   pid->nowError = pid->target - pid->actual;
   pid->integral += pid->nowError;
   // 调用微分滤波函数
-  if(judge==TURN){
-  pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position);
-  }else{
-    if(judge==LEFT_MOTOR){
+  if (judge == TURN)
+  {
+    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position);
+  }
+  else
+  {
+    if (judge == LEFT_MOTOR)
+    {
       pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_L);
     }
-    else if(judge==RIGHT_MOTOR){
+    else if (judge == RIGHT_MOTOR)
+    {
       pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_R);
     }
   }
 
-// 变速积分
-  float coefficient=1.0f;
-  if(pid->integral>pid->A){
-    coefficient=0.0f;
+  // 变速积分
+  float coefficient = 1.0f;
+  if (pid->integral > pid->A)
+  {
+    coefficient = 0.0f;
   }
-  else if(pid->integral>pid->B){
-    coefficient=(pid->A-pid->integral)/(pid->A-pid->B);
+  else if (pid->integral > pid->B)
+  {
+    coefficient = (pid->A - pid->integral) / (pid->A - pid->B);
   }
 
-// 计算output
+  // 计算output
   pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->derivative;
-  
-// 输出限幅
-  if(judge==LEFT_MOTOR){
-    if(pid->output > LEFT_OUTPUTMAX){
-      pid->output=LEFT_OUTPUTMAX;
+
+  // 输出限幅
+  if (judge == LEFT_MOTOR)
+  {
+    if (pid->output > LEFT_OUTPUTMAX)
+    {
+      pid->output = LEFT_OUTPUTMAX;
     }
-    else if(pid->output < LEFT_OUTPUTMIN){
-      pid->output=LEFT_OUTPUTMIN;
-    }
-  }
-  else if(judge==RIGHT_MOTOR){
-    if(pid->output > RIGHT_OUTPUTMAX){
-      pid->output=RIGHT_OUTPUTMAX;
-    }
-    else if(pid->output < RIGHT_OUTPUTMIN){
-      pid->output=RIGHT_OUTPUTMIN;
-    }
-  }else{
-    if(pid->output > TURN_OUTPUTMAX){
-      pid->output=TURN_OUTPUTMAX;
-    }
-    else if(pid->output < TURN_OUTPUTMIN){
-      pid->output=TURN_OUTPUTMIN;
+    else if (pid->output < LEFT_OUTPUTMIN)
+    {
+      pid->output = LEFT_OUTPUTMIN;
     }
   }
-  
+  else if (judge == RIGHT_MOTOR)
+  {
+    if (pid->output > RIGHT_OUTPUTMAX)
+    {
+      pid->output = RIGHT_OUTPUTMAX;
+    }
+    else if (pid->output < RIGHT_OUTPUTMIN)
+    {
+      pid->output = RIGHT_OUTPUTMIN;
+    }
+  }
+  else
+  {
+    if (pid->output > TURN_OUTPUTMAX)
+    {
+      pid->output = TURN_OUTPUTMAX;
+    }
+    else if (pid->output < TURN_OUTPUTMIN)
+    {
+      pid->output = TURN_OUTPUTMIN;
+    }
+  }
 }
 
-
-//参数说明：motor 电机选择，LEFT_MOTOR 左电机，RIGHT_MOTOR 右电机
+// 参数说明：motor 电机选择，LEFT_MOTOR 左电机，RIGHT_MOTOR 右电机
 void Compute_target(int8_t motor)
-{//计算电机的目标速度
-  if(motor==LEFT_MOTOR){
-    speed_pid_left.target=BASE_SPEED+direction_pid.output;
+{ // 计算电机的目标速度
+  if (motor == LEFT_MOTOR)
+  {
+    speed_pid_left.target = BASE_SPEED + direction_pid.output;
   }
-  else if(motor==RIGHT_MOTOR){
-    speed_pid_right.target=BASE_SPEED-direction_pid.output;
+  else if (motor == RIGHT_MOTOR)
+  {
+    speed_pid_right.target = BASE_SPEED - direction_pid.output;
   }
 }
-
 
 void PID_Init(void)
 { // 初始化PID参数
@@ -253,9 +268,9 @@ void PID_Init(void)
 }
 
 void Turn_control(void)
-{// 转向环控制
+{ // 转向环控制
   if (count % 20 == 0)
-  { 
+  {
     float photo_error = Calculate_Photo_Error();
 
     if (photo_error == 9999)
@@ -268,23 +283,22 @@ void Turn_control(void)
   }
 }
 
-
-void Speed_Control(void) 
+void Speed_Control(void)
 { // 速度环控制
   if (count % 2 == 0)
-  {                                                      
+  {
     Left_actual = (int16_t)__HAL_TIM_GET_COUNTER(&htim4); // 获取当前速度
     Right_actual = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
 
-    __HAL_TIM_SET_COUNTER(&htim4, 0);// 重置计数器
+    __HAL_TIM_SET_COUNTER(&htim4, 0); // 重置计数器
     __HAL_TIM_SET_COUNTER(&htim3, 0);
 
-    ComeputePID_Position(&speed_pid_left, Left_actual, LEFT_MOTOR); 
+    ComeputePID_Position(&speed_pid_left, Left_actual, LEFT_MOTOR);
     ComeputePID_Position(&speed_pid_right, Right_actual, RIGHT_MOTOR);
   }
 
-  Left_pwm = speed_pid_left.output+direction_pid.output;
-  Right_pwm = speed_pid_right.output-direction_pid.output;
+  Left_pwm = speed_pid_left.output + direction_pid.output;
+  Right_pwm = speed_pid_right.output - direction_pid.output;
 
   if (Left_pwm > FINAL_OUTPUTMAX)
   { // 最终输出限幅
@@ -342,7 +356,7 @@ int fputc(int ch, FILE *f) // 重定义函数
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int16_t detect=0;
+int16_t detect = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 { // 定时器中断
   if (htim == &htim2)
@@ -353,11 +367,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Speed_Control();
     Set_Motor_PWM(LEFT_MOTOR, Left_pwm);
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
-    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual,speed_pid_left.output, speed_pid_right.output, speed_pid_left.target,speed_pid_right.target);
+    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     count++;
     if (count > 1000)
     {
-    count = 1;
+      count = 1;
     }
   }
 }
@@ -365,9 +379,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
 
@@ -440,17 +454,17 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
@@ -464,9 +478,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -479,10 +492,10 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief SPI1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_SPI1_Init(void)
 {
 
@@ -513,14 +526,13 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
-
 }
 
 /**
-  * @brief TIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM1_Init(void)
 {
 
@@ -596,14 +608,13 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 2 */
   HAL_TIM_MspPostInit(&htim1);
-
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM2_Init(void)
 {
 
@@ -641,14 +652,13 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
-
 }
 
 /**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM3 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM3_Init(void)
 {
 
@@ -690,14 +700,13 @@ static void MX_TIM3_Init(void)
   /* USER CODE BEGIN TIM3_Init 2 */
 
   /* USER CODE END TIM3_Init 2 */
-
 }
 
 /**
-  * @brief TIM4 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM4 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM4_Init(void)
 {
 
@@ -739,14 +748,13 @@ static void MX_TIM4_Init(void)
   /* USER CODE BEGIN TIM4_Init 2 */
 
   /* USER CODE END TIM4_Init 2 */
-
 }
 
 /**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief USART3 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_USART3_UART_Init(void)
 {
 
@@ -772,12 +780,11 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
-
 }
 
 /**
-  * Enable DMA controller clock
-  */
+ * Enable DMA controller clock
+ */
 static void MX_DMA_Init(void)
 {
 
@@ -791,14 +798,13 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -816,10 +822,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|R_DIR_Pin|MUX_0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4 | R_DIR_Pin | MUX_0_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, L_DIR_Pin|MUX_1_Pin|MUX_2_Pin|MUX_3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, L_DIR_Pin | MUX_1_Pin | MUX_2_Pin | MUX_3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -863,7 +869,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(MUX_0_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : MUX_1_Pin MUX_2_Pin MUX_3_Pin */
-  GPIO_InitStruct.Pin = MUX_1_Pin|MUX_2_Pin|MUX_3_Pin;
+  GPIO_InitStruct.Pin = MUX_1_Pin | MUX_2_Pin | MUX_3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
@@ -879,9 +885,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -894,12 +900,12 @@ void Error_Handler(void)
 }
 #ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
