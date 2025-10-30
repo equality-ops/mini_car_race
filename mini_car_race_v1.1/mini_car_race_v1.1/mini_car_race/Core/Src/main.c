@@ -50,7 +50,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12          // 光电管数量
 #define integralLimit 20000   // 积分最大值
 #define FILTER_SIZE 5         // 滤波窗口数量
-#define BASE_SPEED 200        // 基础速度
+#define BASE_SPEED 300        // 基础速度
 #define LEFT_OUTPUTMAX 3600   // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600  // 左电机速度环输出最小值
 #define RIGHT_OUTPUTMAX 3600  // 右电机速度环输出最大值
@@ -59,6 +59,7 @@ typedef struct PIDcontrol
 #define TURN_OUTPUTMIN -3000  // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400  // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400 // 最终输出最小值
+#define RIGHT_ANGLE_TURN_KP 0.65f   // 直角转弯时的kp值
 #define LEFT_MOTOR -1         // 左电机标志
 #define RIGHT_MOTOR 1         // 右电机标志
 #define TURN 0                // 转向环标志
@@ -95,6 +96,7 @@ int16_t Left_pwm = 0, Right_pwm = 0;                             // 左右电机
 static uint32_t count = 0;              // 时间计数器
 static int32_t weighted_sum_record = 0; // 上一次光电管误差记录
 
+static float record_kp=0.0f;
 PID speed_pid_left, speed_pid_right;
 PID direction_pid;
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
@@ -257,7 +259,7 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.3f;
+  direction_pid.kp = 0.2f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.06f;
   direction_pid.A = 800.0f;
@@ -277,17 +279,24 @@ void PID_Init(void)
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = BASE_SPEED;
+
+  record_kp=direction_pid.kp;
 }
 
 void Turn_control(void)
 { // 转向环控制
-  if (count % 10 == 0)
+  if (count % 5 == 0)
   {
     float photo_error = Calculate_Photo_Error();
 
     if (photo_error == 9999)
     {                                    // 丢线情况
       photo_error = weighted_sum_record; // 保持上次误差
+      direction_pid.kp = RIGHT_ANGLE_TURN_KP;  // 使用较大的kp值进行直角转弯
+    }
+    else
+    {
+      direction_pid.kp = record_kp;          // 恢复正常kp值
     }
 
     Direction_actual = photo_error;
@@ -297,7 +306,7 @@ void Turn_control(void)
 
 void Speed_Control(void)
 { // 速度环控制
-  if (count % 2 == 0)
+  if (count % 1 == 0)
   {
     Left_actual = (int16_t)__HAL_TIM_GET_COUNTER(&htim4); // 获取当前速度
     Right_actual = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
