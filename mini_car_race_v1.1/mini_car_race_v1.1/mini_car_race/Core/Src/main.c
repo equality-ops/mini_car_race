@@ -50,11 +50,11 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12          // 光电管数量
 #define integralLimit 20000   // 积分最大值
 #define FILTER_SIZE 5         // 滤波窗口数量
-#define BASE_SPEED 100        // 基础速度
-#define LEFT_OUTPUTMAX 5400   // 左电机速度环输出最大值
-#define LEFT_OUTPUTMIN -5400  // 左电机速度环输出最小值
-#define RIGHT_OUTPUTMAX 1800  // 右电机速度环输出最大值
-#define RIGHT_OUTPUTMIN -1800 // 右电机速度环输出最小值
+#define BASE_SPEED 800        // 基础速度
+#define LEFT_OUTPUTMAX 3600   // 左电机速度环输出最大值
+#define LEFT_OUTPUTMIN -3600  // 左电机速度环输出最小值
+#define RIGHT_OUTPUTMAX 3600  // 右电机速度环输出最大值
+#define RIGHT_OUTPUTMIN -3600 // 右电机速度环输出最小值
 #define TURN_OUTPUTMAX 3000   // 转向环输出最大值
 #define TURN_OUTPUTMIN -3000  // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400  // 最终输出最大值
@@ -264,18 +264,18 @@ void PID_Init(void)
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 60.0f;
-  speed_pid_left.ki = 0.0f;
+  speed_pid_left.kp = 5.0f;
+  speed_pid_left.ki = 0.5f;
   speed_pid_left.kd = 0.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = BASE_SPEED;
 
-  speed_pid_right.kp = 5.0f;
-  speed_pid_right.ki = 0.0f;
-  speed_pid_right.kd = 0.0f;
-  speed_pid_right.A = 400.0f;
-  speed_pid_right.B = 200.0f;
+  speed_pid_right.kp = 10.0f;
+  speed_pid_right.ki = 0.5;
+  speed_pid_right.kd = 2.0f;
+  speed_pid_right.A = 1200.0f;
+  speed_pid_right.B = 600.0f;
   speed_pid_right.target = BASE_SPEED;
 }
 
@@ -309,8 +309,10 @@ void Speed_Control(void)
     ComeputePID_Position(&speed_pid_right, Right_actual, RIGHT_MOTOR);
   }
 
-  Left_pwm = speed_pid_left.output + direction_pid.output;
-  Right_pwm = speed_pid_right.output - direction_pid.output;
+  // Left_pwm = speed_pid_left.output + direction_pid.output;
+  // Right_pwm = speed_pid_right.output - direction_pid.output;
+  Left_pwm = speed_pid_left.output;
+  Right_pwm = speed_pid_right.output;
 
   /* 最终输出限幅（包含负数情况） */
   /* 限幅：避免嵌套三目运算，增强可读性 */
@@ -350,6 +352,8 @@ void Set_Motor_PWM(int8_t motor, int32_t final_pwm)
   }
   if (motor == RIGHT_MOTOR)
   { // 右电机驱动
+  if (final_pwm > 0)
+  {
     TIM1->CCR2 = final_pwm;
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET); // 右电机正转
   }
@@ -358,6 +362,7 @@ void Set_Motor_PWM(int8_t motor, int32_t final_pwm)
     TIM1->CCR2 = -final_pwm;
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET); // 右电机反转
   }
+}
 }
 
 int fputc(int ch, FILE *f) // 重定义函数
@@ -375,13 +380,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 { // 定时器中断
   if (htim == &htim2)
   {
-    Turn_control();
-    Compute_target(LEFT_MOTOR);
-    Compute_target(RIGHT_MOTOR);
+    // Turn_control();
+    // Compute_target(LEFT_MOTOR);
+    // Compute_target(RIGHT_MOTOR);
     Speed_Control();
     Set_Motor_PWM(LEFT_MOTOR, Left_pwm);
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
-    printf("%d %d %d %d %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     count++;
     if (count > 1000)
     {
