@@ -60,8 +60,8 @@ typedef struct PIDcontrol
 #define TURN_OUTPUTMIN -3000  // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400  // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400 // 最终输出最小值
-#define RIGHT_ANGLE_TURN_KP 0.9f   // 直角转弯时的kp值
-#define RIGHT_ANGLE_TURN_KD 0.2f   // 直角转弯时的kd值
+#define RIGHT_ANGLE_TURN_KP 0.6f   // 直角转弯或丢线时的kp值
+#define RIGHT_ANGLE_TURN_KD 0.12f   // 直角转弯或丢线时的kd值
 #define LEFT_MOTOR -1         // 左电机标志
 #define RIGHT_MOTOR 1         // 右电机标志
 #define TURN 0                // 转向环标志
@@ -147,13 +147,13 @@ float Calculate_Photo_Error(void)
   int16_t weighted_sum = 0;
   uint16_t photo_value = 0;
 
-  MUX_get_value(&photo_value);
+  MUX_get_value(&photo_value);// 获取每个通道的返回值
 
   for (int i = 0; i < PHOTO_NUM; i++)
   {
     if ((photo_value >> (PHOTO_NUM - i - 1)) & 1)
-    {                                                // 获取每个通道的返回值
-      weighted_sum += (2 * i - PHOTO_NUM + 1) * 100; // 计算加权和
+    {                                                
+      weighted_sum += (2 * i - PHOTO_NUM + 1) * 70; // 计算加权和
       valid_count++;
     }
   }
@@ -287,23 +287,23 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.18f;
+  direction_pid.kp = 0.05f;
   direction_pid.ki = 0.0f;
-  direction_pid.kd = 0.03f;
+  direction_pid.kd = 0.01f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 4.0f;
-  speed_pid_left.ki = 0.55f;
+  speed_pid_left.kp = 4.5f;
+  speed_pid_left.ki = 1.2f;
   speed_pid_left.kd = 5.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = BASE_SPEED;
 
-  speed_pid_right.kp = 5.0f;
-  speed_pid_right.ki = 0.72f;
-  speed_pid_right.kd = 3.0f;
+  speed_pid_right.kp = 5.2f;
+  speed_pid_right.ki = 1.2f;
+  speed_pid_right.kd = 5.0f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = BASE_SPEED;
@@ -317,16 +317,8 @@ void Turn_control(void)
   if (count % 1 == 0)
   {
     float photo_error = Calculate_Photo_Error();
-
-    if (photo_error == 9999) // 丢线情况
-    {        
-      direction_pid.kp = record_kp;
-      direction_pid.kd = record_kd;
-      photo_error = Error_MAX;
-    }
     
-    
-    if(*valid_count_address >= 7 && *valid_count_address <= 9) // 直角转弯情况
+    if((*valid_count_address >= 7 && *valid_count_address <= 9)||(photo_error == 9999)) // 直角转弯或者丢线情况
     {
       direction_pid.kp = RIGHT_ANGLE_TURN_KP;
       direction_pid.kd = RIGHT_ANGLE_TURN_KD;
@@ -491,7 +483,6 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-  TIM2->ARR = 499;
   /* USER CODE END 2 */
 
   /* Infinite loop */
