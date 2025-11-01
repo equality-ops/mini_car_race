@@ -51,7 +51,7 @@ float filtered_derivative(int32_t nowError, int32_t preError, float kd, float di
 ../Core/Src/main.c(171): note: passing argument to parameter 'diff_buffer' here
 float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
                                                                               ^
-../Core/Src/main.c(434): warning: passing 'volatile float[100]' to parameter of type 'float *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
+../Core/Src/main.c(426): warning: passing 'volatile float[100]' to parameter of type 'float *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
     Error_MAX = FindMax_WeightedValue(weighted_sum_record,diff_buffer_position_turn);
                                                           ^~~~~~~~~~~~~~~~~~~~~~~~~
 ../Core/Src/main.c(128): note: passing argument to parameter 'diff_buffer_position_turn' here
@@ -60,7 +60,7 @@ float FindMax_WeightedValue(float weighted_value,float diff_buffer_position_turn
 6 warnings generated.
 compiling main.c...
 linking...
-Program Size: Code=27582 RO-data=8582 RW-data=36 ZI-data=10652  
+Program Size: Code=27554 RO-data=8582 RW-data=36 ZI-data=10652  
 FromELF: creating hex file...
 "micro_smartcar\micro_smartcar.axf" - 0 Error(s), 6 Warning(s).
 
