@@ -91,7 +91,9 @@ volatile static float diff_buffer_position_L[FILTER_SIZE] = {0};
 volatile static float diff_buffer_position_R[FILTER_SIZE] = {0};
 volatile static float diff_buffer_position_photo_error[FILTER_SIZE_ERROR]={0};
 
-volatile static int16_t buf_index = 0; // 微分滤波索引
+volatile static int16_t buf_index_speed_L = 0; // 速度环左电机微分滤波索引
+volatile static int16_t buf_index_speed_R = 0; // 速度环右电机微分滤波索引
+volatile static int16_t buf_index_turn = 0; // 速度环右电机微分滤波索引
 volatile static int16_t buf_index_error = 0; // 光电管误差索引
 
 volatile static float Error_MAX = 0.0f; // 光电管误差最大值
