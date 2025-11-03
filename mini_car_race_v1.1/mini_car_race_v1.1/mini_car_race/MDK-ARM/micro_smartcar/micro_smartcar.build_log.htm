@@ -27,42 +27,7 @@ Project File Date:  10/29/2025
 <h2>Output:</h2>
 *** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
 Build target 'micro_smartcar'
-../Core/Src/main.c(99): warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
-valid_count = 0; // 光电管数量
-^
-../Core/Src/main.c(100): warning: incompatible pointer types initializing 'int16_t *' (aka 'short *') with an expression of type 'int *' [-Wincompatible-pointer-types]
-int16_t* valid_count_address = &valid_count;
-         ^                     ~~~~~~~~~~~~
-../Core/Src/main.c(199): warning: passing 'volatile float[5]' to parameter of type 'float *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position);
-                                                                                 ^~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c(171): note: passing argument to parameter 'diff_buffer' here
-float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
-                                                                              ^
-../Core/Src/main.c(205): warning: passing 'volatile float[5]' to parameter of type 'float *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_L);
-                                                                                   ^~~~~~~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c(171): note: passing argument to parameter 'diff_buffer' here
-float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
-                                                                              ^
-../Core/Src/main.c(209): warning: passing 'volatile float[5]' to parameter of type 'float *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_R);
-                                                                                   ^~~~~~~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c(171): note: passing argument to parameter 'diff_buffer' here
-float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
-                                                                              ^
-../Core/Src/main.c(426): warning: passing 'volatile float[100]' to parameter of type 'float *' discards qualifiers [-Wincompatible-pointer-types-discards-qualifiers]
-    Error_MAX = FindMax_WeightedValue(weighted_sum_record,diff_buffer_position_turn);
-                                                          ^~~~~~~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c(128): note: passing argument to parameter 'diff_buffer_position_turn' here
-float FindMax_WeightedValue(float weighted_value,float diff_buffer_position_turn[])
-                                                       ^
-6 warnings generated.
-compiling main.c...
-linking...
-Program Size: Code=27554 RO-data=8582 RW-data=36 ZI-data=10652  
-FromELF: creating hex file...
-"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 6 Warning(s).
+"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 

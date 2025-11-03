@@ -50,8 +50,8 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12          // 光电管数量
 #define integralLimit 20000   // 积分最大值
 #define FILTER_SIZE 5         // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
-#define BASE_SPEED 300        // 基础速度
+#define FILTER_SIZE_ERROR 10    // 光电管误差滤波窗口数量
+#define BASE_SPEED 200        // 基础速度
 #define LEFT_OUTPUTMAX 3600   // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600  // 左电机速度环输出最小值
 #define RIGHT_OUTPUTMAX 3600  // 右电机速度环输出最大值
@@ -60,8 +60,8 @@ typedef struct PIDcontrol
 #define TURN_OUTPUTMIN -3000  // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400  // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400 // 最终输出最小值
-#define RIGHT_ANGLE_TURN_KP 0.6f   // 直角转弯或丢线时的kp值
-#define RIGHT_ANGLE_TURN_KD 0.12f   // 直角转弯或丢线时的kd值
+#define RIGHT_ANGLE_TURN_KP 0.65f   // 直角转弯或丢线时的kp值
+#define RIGHT_ANGLE_TURN_KD 0.13f   // 直角转弯或丢线时的kd值
 #define LEFT_MOTOR -1         // 左电机标志
 #define RIGHT_MOTOR 1         // 右电机标志
 #define TURN 0                // 转向环标志
@@ -86,18 +86,18 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 // 缓冲区数组定义,position为位置式PID，incremental为增量式PID,L为左电机，R为右电机`
-volatile static float diff_buffer_position[FILTER_SIZE] = {0};
-volatile static float diff_buffer_incremental_L[FILTER_SIZE] = {0};
-volatile static float diff_buffer_incremental_R[FILTER_SIZE] = {0};
-volatile static float diff_buffer_position_turn[FILTER_SIZE_ERROR]={0};
+volatile static float diff_buffer_position_turn[FILTER_SIZE] = {0};
+volatile static float diff_buffer_position_L[FILTER_SIZE] = {0};
+volatile static float diff_buffer_position_R[FILTER_SIZE] = {0};
+volatile static float diff_buffer_position_photo_error[FILTER_SIZE_ERROR]={0};
 
 volatile static int16_t buf_index = 0; // 微分滤波索引
-volatile static int16_t buf_index_turn = 0; // 光电管误差索引
+volatile static int16_t buf_index_error = 0; // 光电管误差索引
 
 volatile static float Error_MAX = 0.0f; // 光电管误差最大值
 
-valid_count = 0; // 光电管数量
-int16_t* valid_count_address = &valid_count;
+volatile valid_count = 0; // 光电管数量
+volatile int16_t* valid_count_address = &valid_count;
 
 volatile int16_t Left_actual = 0, Right_actual = 0, Direction_actual = 0; // 左右电机实际速度
 volatile int16_t Left_pwm = 0, Right_pwm = 0;                             // 左右电机输出的pwm
@@ -125,19 +125,19 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
 //参数说明：weighted_value 光电管误差，diff_buffer 滤波缓冲区
-float FindMax_WeightedValue(float weighted_value,float diff_buffer_position_turn[])
+float FindMax_WeightedValue(float weighted_value,float diff_buffer_position_photo_error[])
 {//光电管误差寻最大值函数
   //更新滑动窗口
-  diff_buffer_position_turn[buf_index_turn]=weighted_value;
-  buf_index_turn=(buf_index + 1)%FILTER_SIZE_ERROR;
+  diff_buffer_position_photo_error[buf_index_error]=weighted_value;
+  buf_index_error=(buf_index_error + 1)%FILTER_SIZE_ERROR;
   //寻找最大值并返回
-  Error_MAX = diff_buffer_position_turn[0];
-  for(int8_t i=0;i<FILTER_SIZE_ERROR;i++){
-    if(fabs(diff_buffer_position_turn[i])>fabs(Error_MAX)){
-      Error_MAX = diff_buffer_position_turn[i];
+  float MAX = diff_buffer_position_photo_error[0];
+  for(int16_t i=0;i<FILTER_SIZE_ERROR;i++){
+    if(fabs(diff_buffer_position_photo_error[i])>fabs(MAX)){
+      MAX = diff_buffer_position_photo_error[i];
     }
   }
-  return Error_MAX;
+  return MAX;
 }
 
 
@@ -153,7 +153,7 @@ float Calculate_Photo_Error(void)
   {
     if ((photo_value >> (PHOTO_NUM - i - 1)) & 1)
     {                                                
-      weighted_sum += (2 * i - PHOTO_NUM + 1) * 70; // 计算加权和
+      weighted_sum += (2 * i - PHOTO_NUM + 1) * 100; // 计算加权和
       valid_count++;
     }
   }
@@ -177,9 +177,8 @@ float filtered_derivative(int32_t nowError, int32_t preError, float kd, float di
   diff_buffer[buf_index] = raw_diff;
   buf_index = (buf_index + 1) % FILTER_SIZE;
   // 计算平均值
-  int16_t i = 0;
   float sum = 0.0f;
-  for (i = 0; i < FILTER_SIZE; i++)
+  for (int16_t i = 0; i < FILTER_SIZE; i++)
   {
     sum += diff_buffer[i];
   }
@@ -196,23 +195,21 @@ void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
   // 调用微分滤波函数
   if (judge == TURN)
   {
-    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position);
+    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_turn);
   }
   else
   {
     if (judge == LEFT_MOTOR)
     {
-      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_L);
+      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_L);
     }
     else if (judge == RIGHT_MOTOR)
     {
-      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_incremental_R);
+      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_R);
     }
   }
 
-  // 变速积分
   // 变速积分（处理正负积分）
-  {
     float abs_integral = fabsf((float)pid->integral);
     float coefficient = 1.0f;
     if (pid->A == pid->B)
@@ -229,7 +226,7 @@ void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
       {
         coefficient = (pid->A - abs_integral) / (pid->A - pid->B); // 如果绝对值在B到A之间，线性衰减
       }
-    }
+
     pid->integral = (int32_t)((float)pid->integral * coefficient); // 应用系数（保留符号）
   }
 
@@ -287,23 +284,23 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.05f;
+  direction_pid.kp = 0.2f;
   direction_pid.ki = 0.0f;
-  direction_pid.kd = 0.01f;
+  direction_pid.kd = 0.63f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 4.5f;
-  speed_pid_left.ki = 1.2f;
+  speed_pid_left.kp = 4.0f;
+  speed_pid_left.ki = 0.55f;
   speed_pid_left.kd = 5.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = BASE_SPEED;
 
-  speed_pid_right.kp = 5.2f;
-  speed_pid_right.ki = 1.2f;
-  speed_pid_right.kd = 5.0f;
+  speed_pid_right.kp = 5.0f;
+  speed_pid_right.ki = 0.72f;
+  speed_pid_right.kd = 3.0f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = BASE_SPEED;
@@ -423,12 +420,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Turn_control();
     Compute_target(LEFT_MOTOR);
     Compute_target(RIGHT_MOTOR);
-    Error_MAX = FindMax_WeightedValue(weighted_sum_record,diff_buffer_position_turn);
+    Error_MAX = FindMax_WeightedValue(weighted_sum_record,diff_buffer_position_photo_error);
     Speed_Control();
     Set_Motor_PWM(LEFT_MOTOR, Left_pwm);
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
     //printf("%f\r\n",direction_pid.output);
-    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    //printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     count++;
     if (count > 1000)
     {
