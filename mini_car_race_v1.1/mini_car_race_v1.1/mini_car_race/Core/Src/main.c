@@ -62,11 +62,14 @@ typedef struct PIDcontrol
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
 #define RIGHT_ANGLE_TURN_KP 1.5f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.3f // 直角转弯时的kd值
-#define Lose_line_KP 0.3f     // 丢线时的kp值
-#define lose_line_KD 0.06f    // 丢线时的kd值
+#define Lose_line_KP 0.3f        // 丢线时的kp值
+#define lose_line_KD 0.06f       // 丢线时的kd值
+#define RIGHT_ANGLE_TURN_COUNT 40  // 直角转弯计数器阈值
 #define LEFT_MOTOR -1            // 左电机标志
 #define RIGHT_MOTOR 1            // 右电机标志
 #define TURN 0                   // 转向环标志
+#define START_RIGHT_ANGLE_MODE 1    // 进入直角转弯模式标志
+#define EXIT_RIGHT_ANGLE_MODE 0    // 退出直角转弯模式标志
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -108,10 +111,14 @@ volatile int16_t Left_actual = 0, Right_actual = 0, Direction_actual = 0; // 左
 volatile int16_t Left_pwm = 0, Right_pwm = 0;                             // 左右电机输出的pwm
 
 volatile static uint32_t count = 0;            // 时间计数器
+volatile static uint32_t right_angle_turn_count = 0;       // 直角转弯计数器
 volatile static float weighted_sum_record = 0; // 上一次光电管误差记录
 
 volatile static float record_kp = 0.0f;                  // 用于记录转向环kp值
 volatile static float record_kd = 0.0f;                  // 用于记录转向环kd值
+
+volatile static int8_t if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;   // 是否处于直角转弯模式标志
+
 PID speed_pid_left, speed_pid_right;                     // 速度环PID声明
 PID direction_pid;                                       // 转向环PID声明
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
@@ -129,8 +136,8 @@ static void MX_USART3_UART_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
-// 参数说明：weighted_value 光电管误差，diff_buffer 滤波缓冲区
-// 功能：寻找光电管误差最大值并返回，更新滤波缓冲区
+// 参数说明：weighted_value 光电管误差，diff_buffer_photo_error 光电管误差缓冲区
+// 功能：更新缓冲区,寻找光电管误差最大值并返回
 float FindMax_WeightedValue(float weighted_value, float dierroff_buffer_photo_error[])
 { // 光电管误差寻最大值函数
   // 更新滑动窗口
@@ -179,7 +186,7 @@ void Collect_photo_error(void)
     volatile photo_error = Calculate_Photo_Error();
     if(photo_error == 9999||(*valid_count_address >=7 && *valid_count_address <=9)){
         count = 50; // 此时强制开启转换环的直角转弯模式
-    }
+    } 
     }
 }
 
@@ -348,12 +355,23 @@ void Turn_control(void)
     float photo_error = Calculate_Photo_Error();
     
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
-
+    
+    //if((*valid_count_address >= 7 && *valid_count_address <= 9)||if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯情况
     if(*valid_count_address >= 7 && *valid_count_address <= 9) // 直角转弯情况
     {
+      // float comepute_kp = (float)RIGHT_ANGLE_TURN_KP * (RIGHT_ANGLE_TURN_COUNT - right_angle_turn_count) / RIGHT_ANGLE_TURN_COUNT; //直角转弯模式下kp随时间线性变化
+      // if(comepute_kp >= record_kp)
+      // {
+      //   direction_pid.kp = comepute_kp;
+      // }
+      // else
+      // {
+      //   direction_pid.kp = record_kp; 
+      // }
       direction_pid.kp = RIGHT_ANGLE_TURN_KP;
       direction_pid.kd = RIGHT_ANGLE_TURN_KD;
       photo_error = Error_MAX;
+      //if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE; // 进入直角转弯模式
     }
     else if(photo_error == 9999) // 丢线情况
     {  
@@ -366,6 +384,12 @@ void Turn_control(void)
       direction_pid.kp = record_kp;  // 一般情况
       direction_pid.kd = record_kd;
     }
+    
+    // if(right_angle_turn_count >= RIGHT_ANGLE_TURN_COUNT)
+    // {
+    //   if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
+    //   right_angle_turn_count = 0;
+    // } 
 
     Direction_actual = photo_error;
     ComeputePID_Position(&direction_pid, Direction_actual, TURN);
@@ -466,6 +490,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
     // printf("%f\r\n",direction_pid.output);
     //printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    //right_angle_turn_count++;
     count++;
     if (count > 1000)
     {
