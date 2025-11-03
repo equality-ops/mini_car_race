@@ -170,17 +170,31 @@ float Calculate_Photo_Error(void)
 
 
 // 参数说明：nowError 当前误差，preError 上次误差，kd 微分系数，diff_buffer 滤波缓冲区
-float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[])
+float filtered_derivative(int32_t nowError, int32_t preError, float kd, float diff_buffer[], int8_t mode)
 { // 微分缓冲滤波函数
   float raw_diff = 0;
   // 更新目前的微分项
   raw_diff = kd * (nowError - preError);
   // 更新滑动窗口
-  diff_buffer[buf_index] = raw_diff;
-  buf_index = (buf_index + 1) % FILTER_SIZE;
+  if(mode == TURN)
+  {
+    diff_buffer[buf_index_turn] = raw_diff;
+    buf_index_turn = (buf_index_turn + 1) % FILTER_SIZE;
+  }
+  else if(mode == LEFT_MOTOR)
+  {
+    diff_buffer[buf_index_speed_L] = raw_diff;
+    buf_index_speed_L = (buf_index_speed_L + 1) % FILTER_SIZE;
+  }
+  else if(mode == RIGHT_MOTOR)
+  {
+    diff_buffer[buf_index_speed_R] = raw_diff;
+    buf_index_speed_R = (buf_index_speed_R + 1) % FILTER_SIZE;
+  }
   // 计算平均值
+  int16_t i = 0;
   float sum = 0.0f;
-  for (int16_t i = 0; i < FILTER_SIZE; i++)
+  for (i = 0; i < FILTER_SIZE; i++)
   {
     sum += diff_buffer[i];
   }
@@ -197,17 +211,17 @@ void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
   // 调用微分滤波函数
   if (judge == TURN)
   {
-    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_turn);
+    pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_turn, TURN);
   }
   else
   {
     if (judge == LEFT_MOTOR)
     {
-      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_L);
+      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_L, LEFT_MOTOR);
     }
     else if (judge == RIGHT_MOTOR)
     {
-      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_R);
+      pid->derivative = filtered_derivative(pid->nowError, pid->preError, pid->kd, diff_buffer_position_R, RIGHT_MOTOR);
     }
   }
 
@@ -346,7 +360,6 @@ void Speed_Control(void)
 
     ComeputePID_Position(&speed_pid_left, Left_actual, LEFT_MOTOR);
     ComeputePID_Position(&speed_pid_right, Right_actual, RIGHT_MOTOR);
-  }
 
      Left_pwm = speed_pid_left.output - direction_pid.output;
      Right_pwm = speed_pid_right.output + direction_pid.output;
@@ -371,6 +384,7 @@ void Speed_Control(void)
   else if (Right_pwm < FINAL_OUTPUTMIN)
   {
     Right_pwm = FINAL_OUTPUTMIN;
+  }
   }
 }
 
