@@ -347,6 +347,8 @@ void Turn_control(void)
   {
     float photo_error = Calculate_Photo_Error();
     
+    Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
+
     if(*valid_count_address >= 7 && *valid_count_address <= 9) // 直角转弯情况
     {
       direction_pid.kp = RIGHT_ANGLE_TURN_KP;
@@ -459,7 +461,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Turn_control();
     Compute_target(LEFT_MOTOR);
     Compute_target(RIGHT_MOTOR);
-    Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error);
     Speed_Control();
     Set_Motor_PWM(LEFT_MOTOR, Left_pwm);
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
