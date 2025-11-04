@@ -102,6 +102,8 @@ volatile static int16_t buf_index_speed_R = 0;   // 速度环右电机微分滤�
 volatile static int16_t buf_index_turn = 0;    // 转向环微分滤波索引
 volatile static int16_t buf_index_error = 0;   // 光电管误差索引
 
+volatile static float buf[100];  // UART发送缓冲区
+
 volatile static float Error_MAX = 0.0f; // 光电管误差最大值
 
 volatile uint8_t valid_count = 0;                     // 光电管亮起数量
@@ -551,6 +553,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    if(count % 5 ==0){
+      uint16_t len = sprintf(buf, "%f %f %f %f %f %f\r\n", (float)speed_pid_left.actual, (float)speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, (float)speed_pid_left.target, (float)speed_pid_right.target);
+      HAL_UART_Transmit_DMA(&huart3, buf, len);
+    }
     // 以下为陀螺仪使用示例
     //  dodo_BMI270_get_data();//调用此函数会更新陀螺仪数据
     //  gyro_x=BMI270_gyro_transition(BMI270_gyro_x);//将原始陀螺仪数据转换为物理值，单位为度每秒
