@@ -51,7 +51,7 @@ typedef struct PIDcontrol
 #define integralLimit 20000   // 积分最大值
 #define FILTER_SIZE 5         // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
-#define BASE_SPEED 150        // 基础速度
+#define BASE_SPEED 35        // 基础速度
 #define LEFT_OUTPUTMAX 3600   // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600  // 左电机速度环输出最小值
 #define RIGHT_OUTPUTMAX 3600  // 右电机速度环输出最大值
@@ -366,8 +366,8 @@ void Speed_Control(void)
 
     Left_pwm = speed_pid_left.output - direction_pid.output;
     Right_pwm = speed_pid_right.output + direction_pid.output;
-    //Left_pwm = speed_pid_left.output;
-    //Right_pwm = speed_pid_right.output;
+    // Left_pwm = speed_pid_left.output;
+    // Right_pwm = speed_pid_right.output;
 
   /* 最终输出限幅（包含负数情况） */
   /* 限幅：避免嵌套三目运算，增强可读性 */
@@ -423,7 +423,7 @@ void Set_Motor_PWM(int8_t motor, int32_t final_pwm)
 
 int fputc(int ch, FILE *f) // 重定义函数
 {
-  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xffff);
+  HAL_UART_Transmit_IT(&huart3, (uint8_t *)&ch, 1);
   return ch;
 }
 
@@ -444,7 +444,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
     //detect = Calculate_Photo_Error();
     //printf("%f\r\n",direction_pid.output);
-    //printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     //printf("%f\r\n",detect);
     count++;
     if (count > 1000)
