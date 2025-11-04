@@ -444,7 +444,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
     //detect = Calculate_Photo_Error();
     //printf("%f\r\n",direction_pid.output);
-    printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    //printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     //printf("%f\r\n",detect);
     count++;
     if (count > 1000)
