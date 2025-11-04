@@ -50,8 +50,9 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12             // 光电管数量
 #define integralLimit 20000      // 积分最大值
 #define FILTER_SIZE 5            // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100   // 光电管误差滤波窗口数量
-#define BASE_SPEED 100           // 基础速度
+#define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
+#define HIGH_BASE_SPEED 70      // 高速基准速度
+#define LOW_BASE_SPEED 40        // 低速基准速度     
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
 #define RIGHT_OUTPUTMAX 3600     // 右电机速度环输出最大值
@@ -70,6 +71,7 @@ typedef struct PIDcontrol
 #define TURN 0                   // 转向环标志
 #define START_RIGHT_ANGLE_MODE 1    // 进入直角转弯模式标志
 #define EXIT_RIGHT_ANGLE_MODE 0    // 退出直角转弯模式标志
+#define READY_RIGHT_ANGLE_MODE 2   // 准备进入直角转弯模式标志
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -315,11 +317,24 @@ void Compute_target(int8_t motor)
 { // 计算电机的目标速度
   if (motor == LEFT_MOTOR)
   {
-    speed_pid_left.target = BASE_SPEED - direction_pid.output;
+    if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+    {
+      speed_pid_left.target = LOW_BASE_SPEED - direction_pid.output;
+    }
+    else{
+      speed_pid_left.target = HIGH_BASE_SPEED - direction_pid.output;
+    }
   }
   else if (motor == RIGHT_MOTOR)
   {
-    speed_pid_right.target = BASE_SPEED + direction_pid.output;
+    if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+    {
+      speed_pid_right.target = LOW_BASE_SPEED + direction_pid.output;
+    }
+    else
+    {
+      speed_pid_right.target = HIGH_BASE_SPEED + direction_pid.output;
+    }
   }
 }
 
@@ -337,18 +352,34 @@ void PID_Init(void)
   speed_pid_left.kd = 0.55f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
-  speed_pid_left.target = BASE_SPEED;
+  speed_pid_left.target = HIGH_BASE_SPEED;
 
   speed_pid_right.kp = 11.0f;
   speed_pid_right.ki = 2.2f;
   speed_pid_right.kd = 0.7f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
-  speed_pid_right.target = BASE_SPEED;
+  speed_pid_right.target = HIGH_BASE_SPEED;
 
   record_kp = direction_pid.kp; // 记录最初的转向环kp值
   record_kd = direction_pid.kd; // 记录最初的转向环kd值
 }
+
+void Right_angle_mode(void) // 直角转弯模式函数
+{
+  float comepute_kp = (float)RIGHT_ANGLE_TURN_KP * (RIGHT_ANGLE_TURN_COUNT - right_angle_turn_count) / RIGHT_ANGLE_TURN_COUNT; //直角转弯模式下kp随时间线性变化
+  if(comepute_kp >= record_kp)
+  {
+    direction_pid.kp = comepute_kp;
+  }
+  else
+  {
+    direction_pid.kp = record_kp; 
+  }
+  direction_pid.kd = RIGHT_ANGLE_TURN_KD;
+  right_angle_turn_count++;
+}
+
 
 void Turn_control(void)
 { // 转向环控制
@@ -357,35 +388,47 @@ void Turn_control(void)
     float photo_error = Calculate_Photo_Error();
     
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
-    
+
     //if(*valid_count_address >= 7 && *valid_count_address <= 9) // 直角转弯情况
-    if((*valid_count_address >= 7 && *valid_count_address <= 9)||if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯情况
+    if((*valid_count_address >= 7 && *valid_count_address <= 9) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯情况
     {
-      float comepute_kp = (float)RIGHT_ANGLE_TURN_KP * (RIGHT_ANGLE_TURN_COUNT - right_angle_turn_count) / RIGHT_ANGLE_TURN_COUNT; //直角转弯模式下kp随时间线性变化
-      if(comepute_kp >= record_kp)
-      {
-        direction_pid.kp = comepute_kp;
-      }
-      else
-      {
-        direction_pid.kp = record_kp; 
-      }
-      // direction_pid.kp = RIGHT_ANGLE_TURN_KP;
-      direction_pid.kd = RIGHT_ANGLE_TURN_KD;
-      photo_error = Error_MAX;
-      if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE; // 进入直角转弯模式
-      right_angle_turn_count++;
+        if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE)
+        {
+          if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE; // 进入直角转弯模式
+          Right_angle_mode();
+          photo_error = Error_MAX;
+        }
+        else if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+        {
+          Right_angle_mode();
+          photo_error = Error_MAX;
+        }
+        else if(if_right_angle_turn_mode == EXIT_RIGHT_ANGLE_MODE)
+        {
+          direction_pid.kp = record_kp;  // 一般情况
+          direction_pid.kd = record_kd;
+        }
     }
     else if(photo_error == 9999) // 丢线情况
     {  
-      direction_pid.kp = Lose_line_KP;
-      direction_pid.kd = lose_line_KD;
-      photo_error = Error_MAX;
+        direction_pid.kp = Lose_line_KP;
+        direction_pid.kd = lose_line_KD;
+        photo_error = weighted_sum_record; // 保持上一次误差
+        if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
     }
     else
     {
-      direction_pid.kp = record_kp;  // 一般情况
-      direction_pid.kd = record_kd;
+        if(fabs(photo_error) == 0.0f)
+        {
+          if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; // 准备进入直角转弯模式
+        }
+        else
+        {
+         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
+        }
+
+        direction_pid.kp = record_kp;  // 一般情况
+        direction_pid.kd = record_kd;
     }
     
     if(right_angle_turn_count >= RIGHT_ANGLE_TURN_COUNT)
@@ -470,6 +513,7 @@ void Set_Motor_PWM(int8_t motor, int32_t final_pwm)
   }
 }
 
+
 int fputc(int ch, FILE *f) // 重定义函数
 {
   HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xffff);
@@ -484,7 +528,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 { // 定时器中断
   if (htim == &htim2)
   {
-    //Collect_photo_error();
     Turn_control();
     Compute_target(LEFT_MOTOR);
     Compute_target(RIGHT_MOTOR);
@@ -553,7 +596,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(count % 5 ==0){
+    if(count % 1 ==0){
       uint16_t len = sprintf(buf, "%f %f %f %f %f %f\r\n", (float)speed_pid_left.actual, (float)speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, (float)speed_pid_left.target, (float)speed_pid_right.target);
       HAL_UART_Transmit_DMA(&huart3, buf, len);
     }
