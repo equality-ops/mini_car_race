@@ -50,7 +50,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12             // 光电管数量
 #define integralLimit 20000      // 积分最大值
 #define FILTER_SIZE 5            // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 2    // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70      // 高速基准速度
 #define LOW_BASE_SPEED 40        // 低速基准速度     
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
@@ -61,17 +61,21 @@ typedef struct PIDcontrol
 #define TURN_OUTPUTMIN -3000     // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
-#define RIGHT_ANGLE_TURN_KP 10.0f // 直角转弯时的kp值
-#define RIGHT_ANGLE_TURN_KD 2.0f // 直角转弯时的kd值
-#define Lose_line_KP 0.2f        // 丢线时的kp值
-#define lose_line_KD 0.04f       // 丢线时的kd值
-#define RIGHT_ANGLE_TURN_COUNT 80  // 直角转弯计数器阈值
+#define RIGHT_ANGLE_TURN_KP 0.2f // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KD 0.06f // 直角转弯时的kd值
+#define Lose_line_KP 0.1f        // 丢线时的kp值
+#define lose_line_KD 0.03f       // 丢线时的kd值
+#define RESTORE_KP 0.1f          // 恢复模式的kp值
+#define RESTORE_KD 0.3f          // 恢复模式的kd值
+#define RIGHT_ANGLE_TURN_COUNT 200  // 直角转弯计数器阈值
+#define RESTORE_NORMAL_COUNT 50     // 恢复模式计数器阈值
 #define LEFT_MOTOR -1            // 左电机标志
 #define RIGHT_MOTOR 1            // 右电机标志
 #define TURN 0                   // 转向环标志
-#define START_RIGHT_ANGLE_MODE 1    // 进入直角转弯模式标志
+#define START_RIGHT_ANGLE_MODE 1   // 进入直角转弯模式标志
 #define EXIT_RIGHT_ANGLE_MODE 0    // 退出直角转弯模式标志
 #define READY_RIGHT_ANGLE_MODE 2   // 准备进入直角转弯模式标志
+#define RESTORE_NORMAL_MODE 3      // 从直角弯缓慢恢复到正常标志
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -116,6 +120,7 @@ volatile int16_t Left_pwm = 0, Right_pwm = 0;                             // 左
 
 volatile static uint32_t count = 0;            // 时间计数器
 volatile static uint32_t right_angle_turn_count = 0;       // 直角转弯计数器
+volatile static uint32_t restore_count = 0;    // 恢复计数器 
 volatile static float weighted_sum_record = 0; // 上一次光电管误差记录
 
 volatile static float record_kp = 0.0f;                  // 用于记录转向环kp值
@@ -321,7 +326,12 @@ void Compute_target(int8_t motor)
     {
       speed_pid_left.target = LOW_BASE_SPEED - direction_pid.output;
     }
-    else{
+    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE)
+    {
+      speed_pid_left.target = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * (restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
+    }
+    else
+    {
       speed_pid_left.target = HIGH_BASE_SPEED - direction_pid.output;
     }
   }
@@ -330,6 +340,10 @@ void Compute_target(int8_t motor)
     if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
     {
       speed_pid_right.target = LOW_BASE_SPEED + direction_pid.output;
+    }
+    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE)
+    {
+      speed_pid_right.target = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * (restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
     }
     else
     {
@@ -340,23 +354,23 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.06f;
+  direction_pid.kp = 0.1f;
   direction_pid.ki = 0.0f;
-  direction_pid.kd = 0.048f;
+  direction_pid.kd = 0.03f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 10.0f;
-  speed_pid_left.ki = 1.8f;
-  speed_pid_left.kd = 0.55f;
+  speed_pid_left.kp = 20.0f;
+  speed_pid_left.ki = 2.1f;
+  speed_pid_left.kd = 0.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = HIGH_BASE_SPEED;
 
-  speed_pid_right.kp = 11.0f;
-  speed_pid_right.ki = 2.2f;
-  speed_pid_right.kd = 0.7f;
+  speed_pid_right.kp = 20.0f;
+  speed_pid_right.ki = 2.3f;
+  speed_pid_right.kd = 0.0f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = HIGH_BASE_SPEED;
@@ -390,8 +404,10 @@ void Turn_control(void)
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
 
     //if(*valid_count_address >= 7 && *valid_count_address <= 9) // 直角转弯情况
-    if((*valid_count_address >= 7 && *valid_count_address <= 9) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯情况
+    if(if_right_angle_turn_mode != RESTORE_NORMAL_MODE)
     {
+      if((*valid_count_address >= 7 && *valid_count_address <= 9) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯情况
+      {
         if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE)
         {
           if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE; // 进入直角转弯模式
@@ -408,17 +424,17 @@ void Turn_control(void)
           direction_pid.kp = record_kp;  // 一般情况
           direction_pid.kd = record_kd;
         }
-    }
-    else if(photo_error == 9999) // 丢线情况
-    {  
+      }
+      else if(photo_error == 9999) // 丢线情况
+      {  
         direction_pid.kp = Lose_line_KP;
         direction_pid.kd = lose_line_KD;
         photo_error = weighted_sum_record; // 保持上一次误差
         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
-    }
-    else
-    {
-        if(fabs(photo_error) == 0.0f)
+      }
+      else
+      {
+        if(fabs(photo_error) < 200.0f)
         {
           if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; // 准备进入直角转弯模式
         }
@@ -429,13 +445,26 @@ void Turn_control(void)
 
         direction_pid.kp = record_kp;  // 一般情况
         direction_pid.kd = record_kd;
+      }
+    }
+    else
+    {
+      direction_pid.kp = RESTORE_KP;  // 恢复模式情况
+      direction_pid.kd = RESTORE_KD;
+      photo_error = weighted_sum_record; // 保持上一次误差
+      restore_count++;
     }
     
     if(right_angle_turn_count >= RIGHT_ANGLE_TURN_COUNT)
     {
-      if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
+      if_right_angle_turn_mode = RESTORE_NORMAL_MODE; // 退出直角转弯模式并进入恢复模式
       right_angle_turn_count = 0;
     } 
+  
+    if(restore_count >= RESTORE_NORMAL_COUNT){
+      if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出恢复模式并进入正常模式
+      restore_count = 0;
+    }
 
     Direction_actual = photo_error;
     ComeputePID_Position(&direction_pid, Direction_actual, TURN);
@@ -457,8 +486,8 @@ void Speed_Control(void)
   
     Left_pwm = speed_pid_left.output - direction_pid.output;
     Right_pwm = speed_pid_right.output + direction_pid.output;
-    // Left_pwm = speed_pid_left.output;
-    // Right_pwm = speed_pid_right.output;
+     //Left_pwm = speed_pid_left.output;
+     //Right_pwm = speed_pid_right.output;
 
     /* 最终输出限幅（包含负数情况） */
     /* 限幅：避免嵌套三目运算，增强可读性 */
@@ -594,9 +623,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(count % 1 ==0){
-      printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
-    }
+    // if(count % 1 ==0){
+    //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    // }
     // 以下为陀螺仪使用示例
     //  dodo_BMI270_get_data();//调用此函数会更新陀螺仪数据
     //  gyro_x=BMI270_gyro_transition(BMI270_gyro_x);//将原始陀螺仪数据转换为物理值，单位为度每秒
