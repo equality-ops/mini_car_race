@@ -535,7 +535,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Speed_Control();
     Set_Motor_PWM(LEFT_MOTOR, Left_pwm);
     Set_Motor_PWM(RIGHT_MOTOR, Right_pwm);
-    // printf("%f\r\n",direction_pid.output);
+    printf("%f\r\n",direction_pid.output);
     //printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     count++;
     if (count > 1000)
@@ -597,10 +597,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(count % 1 ==0){
-      uint16_t len = sprintf(buf, "%f %f %f %f %f %f\r\n", (float)speed_pid_left.actual, (float)speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, (float)speed_pid_left.target, (float)speed_pid_right.target);
-      HAL_UART_Transmit_DMA(&huart2, buf, len);
-    }
+    // if(count % 1 ==0){
+    //   uint16_t len = sprintf(buf, "%f %f %f %f %f %f\r\n", (float)speed_pid_left.actual, (float)speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, (float)speed_pid_left.target, (float)speed_pid_right.target);
+    //   HAL_UART_Transmit_DMA(&huart2, buf, len);
+    // }
     // 以下为陀螺仪使用示例
     //  dodo_BMI270_get_data();//调用此函数会更新陀螺仪数据
     //  gyro_x=BMI270_gyro_transition(BMI270_gyro_x);//将原始陀螺仪数据转换为物理值，单位为度每秒
