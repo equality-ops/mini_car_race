@@ -27,7 +27,23 @@ Project File Date:  11/04/2025
 <h2>Output:</h2>
 *** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
 Build target 'micro_smartcar'
-"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 0 Warning(s).
+../Core/Src/main.c(130): warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
+volatile static record_error = 0.0f;    // 直角转弯时光电管误差记录
+~~~~~~~~~~~~~~~ ^
+../Core/Src/main.c(309): warning: using floating point absolute value function 'fabs' when argument is of integer type [-Wabsolute-value]
+    pid->output = pid->kp * pid->nowError + fabs(pid->nowError) * pid->nowError * pid->kp2 + pid->ki * pid->integral + pid->derivative + pid->GKD * gyro_z_return;
+                                            ^
+../Core/Src/main.c(309): note: use function 'abs' instead
+    pid->output = pid->kp * pid->nowError + fabs(pid->nowError) * pid->nowError * pid->kp2 + pid->ki * pid->integral + pid->derivative + pid->GKD * gyro_z_return;
+                                            ^~~~
+                                            abs
+../Core/Src/main.c(309): note: include the header <stdlib.h> or explicitly provide a declaration for 'abs'
+2 warnings generated.
+compiling main.c...
+linking...
+Program Size: Code=26014 RO-data=8582 RW-data=40 ZI-data=10712  
+FromELF: creating hex file...
+"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Software Packages used:</h2>
 

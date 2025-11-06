@@ -52,7 +52,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12             // 光电管数量
 #define integralLimit 20000      // 积分最大值
 #define FILTER_SIZE 5            // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 531    // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70      // 高速基准速度
 #define LOW_BASE_SPEED 40        // 低速基准速度     
 
@@ -64,17 +64,21 @@ typedef struct PIDcontrol
 #define TURN_OUTPUTMIN -3000     // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
-#define PHOTO_ERROR_LIMIt 200.0f   // 判断直角弯的光电管误差阈值
+#define PHOTO_ERROR_LIMIt 370.0f // 判断直角弯的光电管误差阈值
+#define PHOTO_ERROR_MAX 800.0f  // 光电管误差能达到的最大值
+#define PHOTO_ERROR_MIN -800.0f // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.3f // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.06f // 直角转弯时的kd值
-#define Lose_line_KP 0.1f        // 丢线时的kp值
-#define lose_line_KD 0.03f       // 丢线时的kd值
+#define Lose_line_KP 0.2f        // 丢线时的kp值
+#define lose_line_KD 0.06f       // 丢线时的kd值
 #define RESTORE_KP 0.1f          // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define RIGHT_ANGLE_TURN_COUNT 530  // 直角转弯计数器阈值
-#define RESTORE_NORMAL_COUNT 600     // 恢复模式计数器阈值
+#define DETECT_TIMES 3           // 直角转弯的检测次数
+
+#define RIGHT_ANGLE_TURN_COUNT 50  // 直角转弯计数器阈值
+#define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
 
 #define LEFT_MOTOR -1            // 左电机标志
 #define RIGHT_MOTOR 1            // 右电机标志
@@ -122,6 +126,10 @@ volatile static int16_t buf_index_gyro_z = 0;  // 陀螺仪数据索引
 volatile static float buf[100];  // UART发送缓冲区
 
 volatile static float Error_MAX = 0.0f; // 光电管误差最大值
+
+volatile static record_error = 0.0f;    // 直角转弯时光电管误差记录
+
+volatile static int8_t detect_flags = 0;  //直角弯检测次数
 
 volatile uint8_t valid_count = 0;                     // 光电管亮起数量
 volatile uint8_t *valid_count_address = &valid_count; // 光电管亮起数量地址
@@ -438,14 +446,26 @@ void Turn_control(void)
       {
         if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
         {
-          if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE; 
+          if(detect_flags >= 3)
+          {
+            if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE;
+          }
           Right_angle_mode();
-          photo_error = Error_MAX;
+          if(photo_error > 0)
+          {
+            record_error = PHOTO_ERROR_MAX;
+          }
+          else if(photo_error < 0)
+          {
+            record_error = PHOTO_ERROR_MIN;
+          }
+          photo_error = record_error;
+          detect_flags++;
         }
         else if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 保持直角转弯模式
         {
           Right_angle_mode();
-          photo_error = Error_MAX;
+          photo_error = record_error;
         }
         else if(if_right_angle_turn_mode == EXIT_RIGHT_ANGLE_MODE) // 一般情况
         {
@@ -457,18 +477,18 @@ void Turn_control(void)
       {  
         direction_pid.kp = Lose_line_KP;
         direction_pid.kd = lose_line_KD;
-        photo_error = weighted_sum_record; // 保持上一次误差
+        photo_error = Error_MAX; // 保持上一次误差
         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
       }
       else // 一般情况
       {
-        if(fabs(photo_error) < PHOTO_ERROR_LIMIt && (*valid_count_address == 3 || *valid_count_address == 4)) // 准备进入直角转弯模式
+        if(fabs(photo_error) < PHOTO_ERROR_LIMIt && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
         {
           if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; 
         }
         else // 退出准备进入直角转弯模式
         {
-         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;
+          if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;
         }
 
         direction_pid.kp = record_kp;  
@@ -481,18 +501,20 @@ void Turn_control(void)
       direction_pid.kd = RESTORE_KD;
       if(photo_error == 9999)
       {
-        photo_error = Error_MAX; 
+        photo_error = record_error;
       }
       else
       {
-        photo_error = weighted_sum_record;
+      photo_error = weighted_sum_record;
       }
+
       restore_count++;
     }
     
     if(right_angle_turn_count >= RIGHT_ANGLE_TURN_COUNT) // 退出直角转弯模式并进入恢复模式
     {
       if_right_angle_turn_mode = RESTORE_NORMAL_MODE; 
+      detect_flags = 0;  // 直角弯检测次数重置
       right_angle_turn_count = 0;
     } 
   
