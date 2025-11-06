@@ -455,7 +455,7 @@ void Turn_control(void)
       }
     }
     else // 恢复模式情况
-    {
+    { 
       direction_pid.kp = RESTORE_KP;  
       direction_pid.kd = RESTORE_KD;
       photo_error = Error_MAX; 
