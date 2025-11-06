@@ -40,9 +40,11 @@ typedef struct PIDcontrol
   int32_t integral;
   float derivative;
   float kp, ki, kd;
+  float kp2; // 转向换二次比例系数
+  float GKD; // 转向换陀螺仪反馈系数
   float A, B; // 变速积分阈值
   float output;
-} PID;
+}PID;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -50,7 +52,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12             // 光电管数量
 #define integralLimit 20000      // 积分最大值
 #define FILTER_SIZE 5            // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 531    // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70      // 高速基准速度
 #define LOW_BASE_SPEED 40        // 低速基准速度     
 
@@ -64,19 +66,20 @@ typedef struct PIDcontrol
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
 #define PHOTO_ERROR_LIMIt 200.0f   // 判断直角弯的光电管误差阈值
 
-#define RIGHT_ANGLE_TURN_KP 0.2f // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KP 0.3f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.06f // 直角转弯时的kd值
 #define Lose_line_KP 0.1f        // 丢线时的kp值
 #define lose_line_KD 0.03f       // 丢线时的kd值
 #define RESTORE_KP 0.1f          // 恢复模式的kp值
-#define RESTORE_KD 0.3f          // 恢复模式的kd值
+#define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define RIGHT_ANGLE_TURN_COUNT 200  // 直角转弯计数器阈值
-#define RESTORE_NORMAL_COUNT 50     // 恢复模式计数器阈值
+#define RIGHT_ANGLE_TURN_COUNT 530  // 直角转弯计数器阈值
+#define RESTORE_NORMAL_COUNT 600     // 恢复模式计数器阈值
 
 #define LEFT_MOTOR -1            // 左电机标志
 #define RIGHT_MOTOR 1            // 右电机标志
 #define TURN 0                   // 转向环标志
+#define GYRO_Z 2                 // 陀螺仪标志
 
 #define START_RIGHT_ANGLE_MODE 1   // 进入直角转弯模式标志
 #define EXIT_RIGHT_ANGLE_MODE 0    // 退出直角转弯模式标志
@@ -108,11 +111,13 @@ volatile static float diff_buffer_position_turn[FILTER_SIZE] = {0};
 volatile static float diff_buffer_position_L[FILTER_SIZE] = {0};
 volatile static float diff_buffer_position_R[FILTER_SIZE] = {0};
 volatile static float diff_buffer_photo_error[FILTER_SIZE_ERROR] = {0};
+volatile static float diff_buffer_gyro_z[FILTER_SIZE] = {0};
 
 volatile static int16_t buf_index_speed_L = 0;   // 速度环左电机微分滤波索引
 volatile static int16_t buf_index_speed_R = 0;   // 速度环右电机微分滤波索引
 volatile static int16_t buf_index_turn = 0;    // 转向环微分滤波索引
 volatile static int16_t buf_index_error = 0;   // 光电管误差索引
+volatile static int16_t buf_index_gyro_z = 0;  // 陀螺仪数据索引
 
 volatile static float buf[100];  // UART发送缓冲区
 
@@ -227,6 +232,11 @@ float filtered_derivative(int32_t nowError, int32_t preError, float kd,volatile 
     diff_buffer[buf_index_speed_R] = raw_diff;
     buf_index_speed_R = (buf_index_speed_R + 1) % FILTER_SIZE;
   }
+  else if(mode == GYRO_Z)
+  {
+    diff_buffer[buf_index_gyro_z] = gyro_z;
+    buf_index_gyro_z = (buf_index_gyro_z + 1) % FILTER_SIZE;
+  }
   // 计算平均值
   int16_t i = 0;
   float sum = 0.0f;
@@ -285,7 +295,16 @@ void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
   }
 
   // 计算output
-  pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->derivative;
+  if(judge == TURN)
+  {
+    float gyro_z_return = filtered_derivative(0, 0, 0, diff_buffer_gyro_z, GYRO_Z);
+    pid->output = pid->kp * pid->nowError + fabs(pid->nowError) * pid->nowError * pid->kp2 + pid->ki * pid->integral + pid->derivative + pid->GKD * gyro_z_return;
+  }
+  else
+  {
+    pid->output = pid->kp * pid->nowError + pid->ki * pid->integral + pid->derivative;
+  }
+  
 
   // 输出限幅
   if (judge == LEFT_MOTOR)
@@ -361,8 +380,10 @@ void Compute_target(int8_t motor)
 void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.1f;
+  direction_pid.kp2 = 0.0001f;
   direction_pid.ki = 0.0f;
-  direction_pid.kd = 0.03f;
+  direction_pid.kd = 0.0f;
+  direction_pid.GKD = -0.1f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
@@ -441,7 +462,7 @@ void Turn_control(void)
       }
       else // 一般情况
       {
-        if(fabs(photo_error) < PHOTO_ERROR_LIMIt) // 准备进入直角转弯模式
+        if(fabs(photo_error) < PHOTO_ERROR_LIMIt && (*valid_count_address == 3 || *valid_count_address == 4)) // 准备进入直角转弯模式
         {
           if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; 
         }
@@ -458,7 +479,14 @@ void Turn_control(void)
     { 
       direction_pid.kp = RESTORE_KP;  
       direction_pid.kd = RESTORE_KD;
-      photo_error = Error_MAX; 
+      if(photo_error == 9999)
+      {
+        photo_error = Error_MAX; 
+      }
+      else
+      {
+        photo_error = weighted_sum_record;
+      }
       restore_count++;
     }
     
@@ -635,13 +663,14 @@ int main(void)
     //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     // }
 
-    // 以下为陀螺仪使用示例
-    //  dodo_BMI270_get_data();//调用此函数会更新陀螺仪数据
-    //  gyro_x=BMI270_gyro_transition(BMI270_gyro_x);//将原始陀螺仪数据转换为物理值，单位为度每秒
-    //  gyro_y=BMI270_gyro_transition(BMI270_gyro_y);
-    //  gyro_z=BMI270_gyro_transition(BMI270_gyro_z);
+    //以下为陀螺仪使用示例
+    dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
+    gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
 
-    // accel_x=BMI270_acc_transition(BMI270_accel_x);//将原始加速度计数据转换为物理值，单位为g，一般不需要使用此数据
+    //  if(count % 200){
+    //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
+    //  }
+      // accel_x=BMI270_acc_transition(BMI270_accel_x);//将原始加速度计数据转换为物理值，单位为g，一般不需要使用此数据
     // accel_y=BMI270_acc_transition(BMI270_accel_y);
     // accel_z=BMI270_acc_transition(BMI270_accel_z);
     // printf("G: %f %f %f | A: %f %f %f\r\n", gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
