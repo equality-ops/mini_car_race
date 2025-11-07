@@ -40,11 +40,12 @@ typedef struct PIDcontrol
   int32_t integral;
   float derivative;
   float kp, ki, kd;
-  float kp2; // 转向换二次比例系数
-  float GKD; // 转向换陀螺仪反馈系数
+  float kp2;  // 转向环二次比例系数
+  float GKD;  // 转向环陀螺仪反馈项的增益系数
   float A, B; // 变速积分阈值
   float output;
 }PID;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -240,11 +241,6 @@ float filtered_derivative(int32_t nowError, int32_t preError, float kd,volatile 
     diff_buffer[buf_index_speed_R] = raw_diff;
     buf_index_speed_R = (buf_index_speed_R + 1) % FILTER_SIZE;
   }
-  else if(mode == GYRO_Z)
-  {
-    diff_buffer[buf_index_gyro_z] = gyro_z;
-    buf_index_gyro_z = (buf_index_gyro_z + 1) % FILTER_SIZE;
-  }
   // 计算平均值
   int16_t i = 0;
   float sum = 0.0f;
@@ -254,6 +250,23 @@ float filtered_derivative(int32_t nowError, int32_t preError, float kd,volatile 
   }
   return sum / FILTER_SIZE;
 }
+
+// 参数说明：raw_gyro_z 原始陀螺仪z轴数据
+float filtered_gyro_z(float raw_gyro_z)
+{ // 陀螺仪数据滤波函数
+  // 更新滑动窗口
+  diff_buffer_gyro_z[buf_index_gyro_z] = raw_gyro_z;
+  buf_index_gyro_z = (buf_index_gyro_z + 1) % FILTER_SIZE;
+  // 计算平均值
+  int16_t i = 0;
+  float sum = 0.0f;
+  for (i = 0; i < FILTER_SIZE; i++)
+  {
+    sum += diff_buffer_gyro_z[i];
+  }
+  return sum / FILTER_SIZE;
+}
+
 
 // 参数解释：pid PID结构体指针，actual 实际位置，judge 判断操作对象
 void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
@@ -305,8 +318,8 @@ void ComeputePID_Position(PID *pid, int16_t actual, int8_t judge)
   // 计算output
   if(judge == TURN)
   {
-    float gyro_z_return = filtered_derivative(0, 0, 0, diff_buffer_gyro_z, GYRO_Z);
-    pid->output = pid->kp * pid->nowError + fabs(pid->nowError) * pid->nowError * pid->kp2 + pid->ki * pid->integral + pid->derivative + pid->GKD * gyro_z_return;
+    float gyro_z_acquire = filtered_gyro_z(gyro_z); // 获取滤波后的陀螺仪数据
+    pid->output = pid->kp * pid->nowError + fabs(pid->nowError) * pid->nowError * pid->kp2 + pid->ki * pid->integral + pid->derivative + pid->GKD * gyro_z_acquire;
   }
   else
   {
@@ -414,21 +427,33 @@ void PID_Init(void)
   record_kd = direction_pid.kd; // 记录最初的转向环kd值
 }
 
-void Right_angle_mode(void) // 直角转弯模式函数
+float Right_angle_mode(void) // 直角转弯模式函数
 {
-  // 计算直角转弯模式下的kp值（随时间线性变化）
-  float comepute_kp = (float)RIGHT_ANGLE_TURN_KP * (RIGHT_ANGLE_TURN_COUNT - right_angle_turn_count) / RIGHT_ANGLE_TURN_COUNT; //直角转弯模式下kp随时间线性变化
-  if(comepute_kp >= record_kp)
-  {
-    direction_pid.kp = comepute_kp; // 直角转弯模式下kp随时间线性变化
-  }
-  else
-  {
-    direction_pid.kp = record_kp; // 直至降为一般情况下的kp值
-  }
-
+  //直角转弯模式下kp随时间线性变化
+  float comepute_kp = (float)RIGHT_ANGLE_TURN_KP - (RIGHT_ANGLE_TURN_KP - record_kp) * right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT; 
+  direction_pid.kp = comepute_kp;
   direction_pid.kd = RIGHT_ANGLE_TURN_KD;
   right_angle_turn_count++;
+  return record_error;
+}
+
+float Ready_right_angle_mode(float photo_error) // 恢复模式函数
+{
+  if(detect_flags >= DETECT_TIMES)
+  {
+    if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE;
+
+    if(photo_error > 0)
+    {
+      record_error = PHOTO_ERROR_MAX;
+    }
+    else if(photo_error < 0)
+    {
+     record_error = PHOTO_ERROR_MIN;
+    }
+  }
+  detect_flags++;
+  return record_error;
 }
 
 
@@ -446,26 +471,11 @@ void Turn_control(void)
       {
         if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
         {
-          if(detect_flags >= DETECT_TIMES)
-          {
-            if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE;
-          }
-          Right_angle_mode();
-          if(photo_error > 0)
-          {
-            record_error = PHOTO_ERROR_MAX;
-          }
-          else if(photo_error < 0)
-          {
-            record_error = PHOTO_ERROR_MIN;
-          }
-          photo_error = record_error;
-          detect_flags++;
+          photo_error = Ready_right_angle_mode(photo_error);
         }
         else if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 保持直角转弯模式
         {
-          Right_angle_mode();
-          photo_error = record_error;
+          photo_error = Right_angle_mode();
         }
         else if(if_right_angle_turn_mode == EXIT_RIGHT_ANGLE_MODE) // 一般情况
         {
