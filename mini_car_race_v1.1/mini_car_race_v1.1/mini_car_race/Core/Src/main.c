@@ -53,7 +53,7 @@ typedef struct PIDcontrol
 #define integralLimit 20000      // 积分最大值
 #define FILTER_SIZE 5            // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 70      // 高速基准速度
+#define HIGH_BASE_SPEED 70       // 高速基准速度
 #define LOW_BASE_SPEED 40        // 低速基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
@@ -65,30 +65,30 @@ typedef struct PIDcontrol
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
 #define PHOTO_ERROR_LIMIt 370.0f // 判断直角弯的光电管误差阈值
-#define PHOTO_ERROR_MAX 800.0f  // 光电管误差能达到的最大值
-#define PHOTO_ERROR_MIN -800.0f // 光电管误差能达到的最小值
+#define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
+#define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
 #define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.06f // 直角转弯时的kd值
-#define Lose_line_KP 0.2f        // 丢线时的kp值
-#define lose_line_KD 0.06f       // 丢线时的kd值
-#define RESTORE_KP 0.1f          // 恢复模式的kp值
+#define Lose_line_KP 0.2f         // 丢线时的kp值
+#define lose_line_KD 0.06f        // 丢线时的kd值
+#define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 3           // 直角转弯的检测次数
+#define DETECT_TIMES 3            // 直角转弯的检测次数
 
-#define RIGHT_ANGLE_TURN_COUNT 50  // 直角转弯计数器阈值
+#define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
 
-#define LEFT_MOTOR -1            // 左电机标志
-#define RIGHT_MOTOR 1            // 右电机标志
-#define TURN 0                   // 转向环标志
-#define GYRO_Z 2                 // 陀螺仪标志
+#define LEFT_MOTOR -1              // 左电机标志
+#define RIGHT_MOTOR 1              // 右电机标志
+#define TURN 0                     // 转向环标志
+#define GYRO_Z 2                   // 陀螺仪标志
 
 #define START_RIGHT_ANGLE_MODE 1   // 进入直角转弯模式标志
 #define EXIT_RIGHT_ANGLE_MODE 0    // 退出直角转弯模式标志
 #define READY_RIGHT_ANGLE_MODE 2   // 准备进入直角转弯模式标志
-#define RESTORE_NORMAL_MODE 3      // 从直角弯缓慢恢复到正常标志
+#define RESTORE_NORMAL_MODE 3      // 进入恢复模式标志
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
