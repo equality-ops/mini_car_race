@@ -77,9 +77,9 @@ typedef struct PIDcontrol
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 3            // 直角转弯的检测次数
+#define DETECT_TIMES 2           // 直角转弯的检测次数
 
-#define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
+#define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
@@ -370,7 +370,7 @@ void Compute_target(int8_t motor)
   {
     if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_left.target = HIGH_BASE_SPEED - (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT) - direction_pid.output;
+      speed_pid_left.target = LOW_BASE_SPEED - direction_pid.output;
     }
     else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE) // 恢复模式下基准速度线性增长恢复到HIGH_BASE_SPEED
     {
@@ -385,7 +385,7 @@ void Compute_target(int8_t motor)
   {
     if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_right.target = HIGH_BASE_SPEED - (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT) + direction_pid.output;
+      speed_pid_right.target = LOW_BASE_SPEED + direction_pid.output;
     }
     else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE) // 恢复模式下基准速度线性增长恢复到HIGH_BASE_SPEED
     {
@@ -440,10 +440,11 @@ float Right_angle_mode(void) // 直角转弯模式函数
 
 float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模式函数
 {
-  if(detect_flags >= DETECT_TIMES) // 判断是否连续多次满足进入直角转弯模式条件
+  if(detect_flags >= DETECT_TIMES - 1) // 判断是否连续多次满足进入直角转弯模式条件
   {
     if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE;
-
+    direction_pid.kp = RIGHT_ANGLE_TURN_KP; // 切换为直角转弯时的kp和kd值
+    direction_pid.kd = RIGHT_ANGLE_TURN_KD; 
     if(photo_error > 0)
     {
       record_error = PHOTO_ERROR_MAX;
@@ -456,16 +457,14 @@ float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模�
     {
       record_error = 0.0f; // 可能进入到十字路口，光电管误差应为0.0f
     }
-    direction_pid.kp = RIGHT_ANGLE_TURN_KP; // 切换为直角转弯时的kp和kd值
-    direction_pid.kd = RIGHT_ANGLE_TURN_KD; 
   }
   else
   {
-    record_error = photo_error; 
+    record_error = photo_error; // 记录当前光电管误差
   }
 
+  return record_error;
   detect_flags++; // 完成一次对直角弯标志的判断
-  return record_error; // 返回已经记录的误差
 }
 
 float Restore_mode(float photo_error) // 恢复模式函数
@@ -544,13 +543,13 @@ void Turn_control(void)
     {
       if_right_angle_turn_mode = RESTORE_NORMAL_MODE; 
       detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
-      record_error = 0.0f; // 直角弯误差记录重置
       right_angle_turn_count = 0; // 直角转弯计数器重置
     } 
   
     if(restore_count >= RESTORE_NORMAL_COUNT) // 退出恢复模式并进入正常模式
     {
       if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; 
+      record_error = 0.0f; // 直角弯误差记录重置
       restore_count = 0; // 恢复计数器重置
     }
 
