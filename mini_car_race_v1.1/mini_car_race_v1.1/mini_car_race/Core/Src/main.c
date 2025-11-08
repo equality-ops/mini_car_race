@@ -77,7 +77,7 @@ typedef struct PIDcontrol
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 2           // 直角转弯的检测次数
+#define DETECT_TIMES 4           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
@@ -445,6 +445,10 @@ float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模�
     if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE;
     direction_pid.kp = RIGHT_ANGLE_TURN_KP; // 切换为直角转弯时的kp和kd值
     direction_pid.kd = RIGHT_ANGLE_TURN_KD; 
+    return record_error;
+  }
+  else if(detect_flags == 0)
+  {
     if(photo_error > 0)
     {
       record_error = PHOTO_ERROR_MAX;
@@ -457,14 +461,10 @@ float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模�
     {
       record_error = 0.0f; // 可能进入到十字路口，光电管误差应为0.0f
     }
-  }
-  else
-  {
-    record_error = photo_error; // 记录当前光电管误差
-  }
+  } 
 
-  return record_error;
   detect_flags++; // 完成一次对直角弯标志的判断
+  return photo_error;
 }
 
 float Restore_mode(float photo_error) // 恢复模式函数
