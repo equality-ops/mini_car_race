@@ -495,7 +495,7 @@ void Turn_control(void)
 
     if(if_right_angle_turn_mode != RESTORE_NORMAL_MODE)
     {
-      if(((*valid_count_address >= 7 && *valid_count_address <= 9) && (fabs(photo_error) >= 1079.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+      if(((*valid_count_address >= 7 && *valid_count_address <= 9) && (fabs(photo_error) >= 119.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
       { // 直角转弯情况
         if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
         {
