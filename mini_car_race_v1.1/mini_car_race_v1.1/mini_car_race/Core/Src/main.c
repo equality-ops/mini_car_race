@@ -53,7 +53,7 @@ typedef struct PIDcontrol
 /* USER CODE BEGIN PD */
 #define PHOTO_NUM 12             // 光电管数量
 #define integralLimit 20000      // 积分最大值
-#define FILTER_SIZE 5            // 微分滤波窗口数量
+#define FILTER_SIZE 5           // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70       // 高速基准速度
 #define LOW_BASE_SPEED 40        // 低速基准速度     
@@ -71,13 +71,13 @@ typedef struct PIDcontrol
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
 #define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
-#define RIGHT_ANGLE_TURN_KD 0.06f // 直角转弯时的kd值
-#define Lose_line_KP 0.2f         // 丢线时的kp值
-#define lose_line_KD 0.06f        // 丢线时的kd值
+#define RIGHT_ANGLE_TURN_KD 0.08f // 直角转弯时的kd值
+#define Lose_line_KP 0.25f         // 丢线时的kp值
+#define lose_line_KD 0.08f        // 丢线时的kd值
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 4           // 直角转弯的检测次数
+#define DETECT_TIMES 5           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
@@ -710,6 +710,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // // 速度环pid调试输出
     // if(count % 1 ==0){
     //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
     // }
