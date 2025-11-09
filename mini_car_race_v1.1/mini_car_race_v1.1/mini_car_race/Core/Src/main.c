@@ -371,7 +371,7 @@ void Compute_target(int8_t motor)
 { // 计算电机的目标速度
   if (motor == LEFT_MOTOR)
   {
-    if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为TURN_BASE_SPEED
+    if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度降为TURN_BASE_SPEED
     {
       speed_pid_left.target = TURN_BASE_SPEED - direction_pid.output;
     }
@@ -390,7 +390,7 @@ void Compute_target(int8_t motor)
   }
   else if (motor == RIGHT_MOTOR)
   {
-    if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为TURN_BASE_SPEED
+    if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度降为TURN_BASE_SPEED
     {
       speed_pid_right.target = TURN_BASE_SPEED + direction_pid.output;
     }
@@ -507,7 +507,7 @@ void Turn_control(void)
 
     if(if_right_angle_turn_mode != RESTORE_NORMAL_MODE)
     {
-      if((*valid_count_address >= 7 && *valid_count_address <= 9) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+      if(((*valid_count_address >= 7 && *valid_count_address <= 9) && (fabs(photo_error) >= 119.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
       { // 直角转弯情况
         if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
         {
@@ -527,6 +527,7 @@ void Turn_control(void)
       {  
         direction_pid.kp = Lose_line_KP;
         direction_pid.kd = lose_line_KD;
+        direction_pid.GKD = record_gkd;
         photo_error = weighted_sum_record; // 保持前一段路程的最大误差
         detect_flags = 0; // 直角弯检测次数重置
         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
@@ -544,6 +545,7 @@ void Turn_control(void)
         detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
         direction_pid.kp = record_kp;  
         direction_pid.kd = record_kd;
+        direction_pid.GKD = record_gkd;
       }
     }
     else // 恢复模式情况

@@ -93,9 +93,9 @@ Section Cross References
     main.o(.text.Turn_control) refers to ffixi.o(.text) for __aeabi_f2iz
     main.o(.text.Turn_control) refers to main.o(.text.ComeputePID_Position) for ComeputePID_Position
     main.o(.text.Turn_control) refers to main.o(.data.valid_count_address) for valid_count_address
+    main.o(.text.Turn_control) refers to fcmpge.o(.text) for __aeabi_fcmpge
     main.o(.text.Turn_control) refers to fcmpgt.o(.text) for __aeabi_fcmpgt
     main.o(.text.Turn_control) refers to fcmplt.o(.text) for __aeabi_fcmplt
-    main.o(.text.Turn_control) refers to fcmpge.o(.text) for __aeabi_fcmpge
     main.o(.ARM.exidx.text.Turn_control) refers to main.o(.text.Turn_control) for [Anonymous Symbol]
     main.o(.text.Speed_Control) refers to main.o(.bss..L_MergedGlobals) for .L_MergedGlobals
     main.o(.text.Speed_Control) refers to main.o(.bss..L_MergedGlobals.2) for .L_MergedGlobals.2
@@ -2496,53 +2496,53 @@ Image Symbol Table
     [Anonymous Symbol]                       0x08003598   Section        0  stm32f1xx_it.o(.text.TIM3_IRQHandler)
     [Anonymous Symbol]                       0x080035a4   Section        0  stm32f1xx_it.o(.text.TIM4_IRQHandler)
     [Anonymous Symbol]                       0x080035b0   Section        0  main.o(.text.Turn_control)
-    UART_DMAAbortOnError                     0x080037ad   Thumb Code    12  stm32f1xx_hal_uart.o(.text.UART_DMAAbortOnError)
-    [Anonymous Symbol]                       0x080037ac   Section        0  stm32f1xx_hal_uart.o(.text.UART_DMAAbortOnError)
-    UART_Receive_IT                          0x080037b9   Thumb Code   254  stm32f1xx_hal_uart.o(.text.UART_Receive_IT)
-    [Anonymous Symbol]                       0x080037b8   Section        0  stm32f1xx_hal_uart.o(.text.UART_Receive_IT)
-    [Anonymous Symbol]                       0x080038b8   Section        0  stm32f1xx_it.o(.text.USART3_IRQHandler)
-    [Anonymous Symbol]                       0x080038c4   Section        0  stm32f1xx_it.o(.text.UsageFault_Handler)
-    [Anonymous Symbol]                       0x080038c8   Section        0  bmi270_port.o(.text.bmi270_get_accel_gyro)
-    [Anonymous Symbol]                       0x08003940   Section        0  bmi270.o(.text.bmi270_init)
-    [Anonymous Symbol]                       0x080039d0   Section        0  bmi270_port.o(.text.bmi270_sensor_init_spi)
-    [Anonymous Symbol]                       0x08003ae0   Section        0  bmi270_port.o(.text.bmi270_set_config)
-    [Anonymous Symbol]                       0x08003b68   Section        0  bmi270_port.o(.text.bmi2_delay_us)
-    [Anonymous Symbol]                       0x08003bb8   Section        0  bmi2.o(.text.bmi2_get_feat_config)
-    [Anonymous Symbol]                       0x08003eac   Section        0  bmi2.o(.text.bmi2_get_feature_data)
-    [Anonymous Symbol]                       0x08004140   Section        0  bmi2.o(.text.bmi2_get_gyro_cross_sense)
-    [Anonymous Symbol]                       0x08004190   Section        0  bmi2.o(.text.bmi2_get_regs)
-    [Anonymous Symbol]                       0x0800428c   Section        0  bmi2.o(.text.bmi2_get_sensor_config)
-    [Anonymous Symbol]                       0x080045fc   Section        0  bmi2.o(.text.bmi2_get_sensor_data)
-    [Anonymous Symbol]                       0x08004678   Section        0  bmi2.o(.text.bmi2_parse_sensor_data)
-    [Anonymous Symbol]                       0x080047c4   Section        0  bmi2.o(.text.bmi2_sec_init)
-    [Anonymous Symbol]                       0x080048a8   Section        0  bmi2.o(.text.bmi2_sensor_enable)
-    [Anonymous Symbol]                       0x08004b7c   Section        0  bmi2.o(.text.bmi2_set_adv_power_save)
-    [Anonymous Symbol]                       0x08004c38   Section        0  bmi2.o(.text.bmi2_set_sensor_config)
-    [Anonymous Symbol]                       0x08005278   Section        0  bmi2.o(.text.bmi2_soft_reset)
-    [Anonymous Symbol]                       0x08005350   Section        0  bmi270_port.o(.text.bmi2_spi_read)
-    [Anonymous Symbol]                       0x08005460   Section        0  bmi270_port.o(.text.bmi2_spi_write)
-    [Anonymous Symbol]                       0x08005550   Section        0  bmi2.o(.text.bmi2_write_config_file)
-    [Anonymous Symbol]                       0x080056f0   Section        0  dodo_bmi270.o(.text.dodo_BMI270_get_data)
-    [Anonymous Symbol]                       0x08005748   Section        0  dodo_bmi270.o(.text.dodo_BMI270_init)
-    get_aux_interface_config                 0x08005795   Thumb Code   230  bmi2.o(.text.get_aux_interface_config)
-    [Anonymous Symbol]                       0x08005794   Section        0  bmi2.o(.text.get_aux_interface_config)
-    [Anonymous Symbol]                       0x0800587c   Section        0  main.o(.text.main)
-    set_accel_config                         0x08005df9   Thumb Code   360  bmi2.o(.text.set_accel_config)
-    [Anonymous Symbol]                       0x08005df8   Section        0  bmi2.o(.text.set_accel_config)
-    set_config_load                          0x08005f61   Thumb Code   176  bmi2.o(.text.set_config_load)
-    [Anonymous Symbol]                       0x08005f60   Section        0  bmi2.o(.text.set_config_load)
-    set_gyro_config                          0x08006011   Thumb Code   440  bmi2.o(.text.set_gyro_config)
-    [Anonymous Symbol]                       0x08006010   Section        0  bmi2.o(.text.set_gyro_config)
-    upload_file                              0x080061c9   Thumb Code   272  bmi2.o(.text.upload_file)
-    [Anonymous Symbol]                       0x080061c8   Section        0  bmi2.o(.text.upload_file)
-    i.__scatterload_copy                     0x080062d8   Section       14  handlers.o(i.__scatterload_copy)
-    i.__scatterload_null                     0x080062e6   Section        2  handlers.o(i.__scatterload_null)
-    i.__scatterload_zeroinit                 0x080062e8   Section       14  handlers.o(i.__scatterload_zeroinit)
-    .L__const.bmi2_sec_init.axes_remap       0x080062f6   Data           6  bmi2.o(.rodata..L__const.bmi2_sec_init.axes_remap)
-    HAL_RCC_GetSysClockFreq.aPredivFactorTable 0x08006314   Data           2  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
-    [Anonymous Symbol]                       0x08006314   Section        0  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
-    HAL_RCC_GetSysClockFreq.aPLLMULFactorTable 0x0800835e   Data          16  stm32f1xx_hal_rcc.o(.rodata.cst16)
-    [Anonymous Symbol]                       0x0800835e   Section        0  stm32f1xx_hal_rcc.o(.rodata.cst16)
+    UART_DMAAbortOnError                     0x080037d1   Thumb Code    12  stm32f1xx_hal_uart.o(.text.UART_DMAAbortOnError)
+    [Anonymous Symbol]                       0x080037d0   Section        0  stm32f1xx_hal_uart.o(.text.UART_DMAAbortOnError)
+    UART_Receive_IT                          0x080037dd   Thumb Code   254  stm32f1xx_hal_uart.o(.text.UART_Receive_IT)
+    [Anonymous Symbol]                       0x080037dc   Section        0  stm32f1xx_hal_uart.o(.text.UART_Receive_IT)
+    [Anonymous Symbol]                       0x080038dc   Section        0  stm32f1xx_it.o(.text.USART3_IRQHandler)
+    [Anonymous Symbol]                       0x080038e8   Section        0  stm32f1xx_it.o(.text.UsageFault_Handler)
+    [Anonymous Symbol]                       0x080038ec   Section        0  bmi270_port.o(.text.bmi270_get_accel_gyro)
+    [Anonymous Symbol]                       0x08003964   Section        0  bmi270.o(.text.bmi270_init)
+    [Anonymous Symbol]                       0x080039f4   Section        0  bmi270_port.o(.text.bmi270_sensor_init_spi)
+    [Anonymous Symbol]                       0x08003b04   Section        0  bmi270_port.o(.text.bmi270_set_config)
+    [Anonymous Symbol]                       0x08003b8c   Section        0  bmi270_port.o(.text.bmi2_delay_us)
+    [Anonymous Symbol]                       0x08003bdc   Section        0  bmi2.o(.text.bmi2_get_feat_config)
+    [Anonymous Symbol]                       0x08003ed0   Section        0  bmi2.o(.text.bmi2_get_feature_data)
+    [Anonymous Symbol]                       0x08004164   Section        0  bmi2.o(.text.bmi2_get_gyro_cross_sense)
+    [Anonymous Symbol]                       0x080041b4   Section        0  bmi2.o(.text.bmi2_get_regs)
+    [Anonymous Symbol]                       0x080042b0   Section        0  bmi2.o(.text.bmi2_get_sensor_config)
+    [Anonymous Symbol]                       0x08004620   Section        0  bmi2.o(.text.bmi2_get_sensor_data)
+    [Anonymous Symbol]                       0x0800469c   Section        0  bmi2.o(.text.bmi2_parse_sensor_data)
+    [Anonymous Symbol]                       0x080047e8   Section        0  bmi2.o(.text.bmi2_sec_init)
+    [Anonymous Symbol]                       0x080048cc   Section        0  bmi2.o(.text.bmi2_sensor_enable)
+    [Anonymous Symbol]                       0x08004ba0   Section        0  bmi2.o(.text.bmi2_set_adv_power_save)
+    [Anonymous Symbol]                       0x08004c5c   Section        0  bmi2.o(.text.bmi2_set_sensor_config)
+    [Anonymous Symbol]                       0x0800529c   Section        0  bmi2.o(.text.bmi2_soft_reset)
+    [Anonymous Symbol]                       0x08005374   Section        0  bmi270_port.o(.text.bmi2_spi_read)
+    [Anonymous Symbol]                       0x08005484   Section        0  bmi270_port.o(.text.bmi2_spi_write)
+    [Anonymous Symbol]                       0x08005574   Section        0  bmi2.o(.text.bmi2_write_config_file)
+    [Anonymous Symbol]                       0x08005714   Section        0  dodo_bmi270.o(.text.dodo_BMI270_get_data)
+    [Anonymous Symbol]                       0x0800576c   Section        0  dodo_bmi270.o(.text.dodo_BMI270_init)
+    get_aux_interface_config                 0x080057b9   Thumb Code   230  bmi2.o(.text.get_aux_interface_config)
+    [Anonymous Symbol]                       0x080057b8   Section        0  bmi2.o(.text.get_aux_interface_config)
+    [Anonymous Symbol]                       0x080058a0   Section        0  main.o(.text.main)
+    set_accel_config                         0x08005e1d   Thumb Code   360  bmi2.o(.text.set_accel_config)
+    [Anonymous Symbol]                       0x08005e1c   Section        0  bmi2.o(.text.set_accel_config)
+    set_config_load                          0x08005f85   Thumb Code   176  bmi2.o(.text.set_config_load)
+    [Anonymous Symbol]                       0x08005f84   Section        0  bmi2.o(.text.set_config_load)
+    set_gyro_config                          0x08006035   Thumb Code   440  bmi2.o(.text.set_gyro_config)
+    [Anonymous Symbol]                       0x08006034   Section        0  bmi2.o(.text.set_gyro_config)
+    upload_file                              0x080061ed   Thumb Code   272  bmi2.o(.text.upload_file)
+    [Anonymous Symbol]                       0x080061ec   Section        0  bmi2.o(.text.upload_file)
+    i.__scatterload_copy                     0x080062fc   Section       14  handlers.o(i.__scatterload_copy)
+    i.__scatterload_null                     0x0800630a   Section        2  handlers.o(i.__scatterload_null)
+    i.__scatterload_zeroinit                 0x0800630c   Section       14  handlers.o(i.__scatterload_zeroinit)
+    .L__const.bmi2_sec_init.axes_remap       0x0800631a   Data           6  bmi2.o(.rodata..L__const.bmi2_sec_init.axes_remap)
+    HAL_RCC_GetSysClockFreq.aPredivFactorTable 0x08006338   Data           2  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
+    [Anonymous Symbol]                       0x08006338   Section        0  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
+    HAL_RCC_GetSysClockFreq.aPLLMULFactorTable 0x08008382   Data          16  stm32f1xx_hal_rcc.o(.rodata.cst16)
+    [Anonymous Symbol]                       0x08008382   Section        0  stm32f1xx_hal_rcc.o(.rodata.cst16)
     .L_MergedGlobals                         0x20000000   Data           8  stm32f1xx_hal.o(.data..L_MergedGlobals)
     [Anonymous Symbol]                       0x20000000   Section        0  stm32f1xx_hal.o(.data..L_MergedGlobals)
     .L_MergedGlobals                         0x20000028   Data         120  main.o(.bss..L_MergedGlobals)
@@ -2746,42 +2746,42 @@ Image Symbol Table
     TIM2_IRQHandler                          0x0800358d   Thumb Code    12  stm32f1xx_it.o(.text.TIM2_IRQHandler)
     TIM3_IRQHandler                          0x08003599   Thumb Code    12  stm32f1xx_it.o(.text.TIM3_IRQHandler)
     TIM4_IRQHandler                          0x080035a5   Thumb Code    12  stm32f1xx_it.o(.text.TIM4_IRQHandler)
-    Turn_control                             0x080035b1   Thumb Code   506  main.o(.text.Turn_control)
-    USART3_IRQHandler                        0x080038b9   Thumb Code    12  stm32f1xx_it.o(.text.USART3_IRQHandler)
-    UsageFault_Handler                       0x080038c5   Thumb Code     2  stm32f1xx_it.o(.text.UsageFault_Handler)
-    bmi270_get_accel_gyro                    0x080038c9   Thumb Code   118  bmi270_port.o(.text.bmi270_get_accel_gyro)
-    bmi270_init                              0x08003941   Thumb Code   144  bmi270.o(.text.bmi270_init)
-    bmi270_sensor_init_spi                   0x080039d1   Thumb Code   270  bmi270_port.o(.text.bmi270_sensor_init_spi)
-    bmi270_set_config                        0x08003ae1   Thumb Code   134  bmi270_port.o(.text.bmi270_set_config)
-    bmi2_delay_us                            0x08003b69   Thumb Code    80  bmi270_port.o(.text.bmi2_delay_us)
-    bmi2_get_feat_config                     0x08003bb9   Thumb Code   756  bmi2.o(.text.bmi2_get_feat_config)
-    bmi2_get_feature_data                    0x08003ead   Thumb Code   658  bmi2.o(.text.bmi2_get_feature_data)
-    bmi2_get_gyro_cross_sense                0x08004141   Thumb Code    80  bmi2.o(.text.bmi2_get_gyro_cross_sense)
-    bmi2_get_regs                            0x08004191   Thumb Code   250  bmi2.o(.text.bmi2_get_regs)
-    bmi2_get_sensor_config                   0x0800428d   Thumb Code   878  bmi2.o(.text.bmi2_get_sensor_config)
-    bmi2_get_sensor_data                     0x080045fd   Thumb Code   122  bmi2.o(.text.bmi2_get_sensor_data)
-    bmi2_parse_sensor_data                   0x08004679   Thumb Code   330  bmi2.o(.text.bmi2_parse_sensor_data)
-    bmi2_sec_init                            0x080047c5   Thumb Code   226  bmi2.o(.text.bmi2_sec_init)
-    bmi2_sensor_enable                       0x080048a9   Thumb Code   722  bmi2.o(.text.bmi2_sensor_enable)
-    bmi2_set_adv_power_save                  0x08004b7d   Thumb Code   188  bmi2.o(.text.bmi2_set_adv_power_save)
-    bmi2_set_sensor_config                   0x08004c39   Thumb Code  1598  bmi2.o(.text.bmi2_set_sensor_config)
-    bmi2_soft_reset                          0x08005279   Thumb Code   216  bmi2.o(.text.bmi2_soft_reset)
-    bmi2_spi_read                            0x08005351   Thumb Code   270  bmi270_port.o(.text.bmi2_spi_read)
-    bmi2_spi_write                           0x08005461   Thumb Code   240  bmi270_port.o(.text.bmi2_spi_write)
-    bmi2_write_config_file                   0x08005551   Thumb Code   416  bmi2.o(.text.bmi2_write_config_file)
-    dodo_BMI270_get_data                     0x080056f1   Thumb Code    86  dodo_bmi270.o(.text.dodo_BMI270_get_data)
-    dodo_BMI270_init                         0x08005749   Thumb Code    74  dodo_bmi270.o(.text.dodo_BMI270_init)
-    main                                     0x0800587d   Thumb Code  1402  main.o(.text.main)
-    __scatterload_copy                       0x080062d9   Thumb Code    14  handlers.o(i.__scatterload_copy)
-    __scatterload_null                       0x080062e7   Thumb Code     2  handlers.o(i.__scatterload_null)
-    __scatterload_zeroinit                   0x080062e9   Thumb Code    14  handlers.o(i.__scatterload_zeroinit)
-    AHBPrescTable                            0x080062fc   Data          16  system_stm32f1xx.o(.rodata.AHBPrescTable)
-    APBPrescTable                            0x0800630c   Data           8  system_stm32f1xx.o(.rodata.APBPrescTable)
-    bmi270_config_file                       0x08006316   Data        8192  bmi270.o(.rodata.bmi270_config_file)
-    bmi270_feat_in                           0x08008316   Data          51  bmi270.o(.rodata.bmi270_feat_in)
-    bmi270_feat_out                          0x08008349   Data          21  bmi270.o(.rodata.bmi270_feat_out)
-    Region$$Table$$Base                      0x08008370   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x08008390   Number         0  anon$$obj.o(Region$$Table)
+    Turn_control                             0x080035b1   Thumb Code   544  main.o(.text.Turn_control)
+    USART3_IRQHandler                        0x080038dd   Thumb Code    12  stm32f1xx_it.o(.text.USART3_IRQHandler)
+    UsageFault_Handler                       0x080038e9   Thumb Code     2  stm32f1xx_it.o(.text.UsageFault_Handler)
+    bmi270_get_accel_gyro                    0x080038ed   Thumb Code   118  bmi270_port.o(.text.bmi270_get_accel_gyro)
+    bmi270_init                              0x08003965   Thumb Code   144  bmi270.o(.text.bmi270_init)
+    bmi270_sensor_init_spi                   0x080039f5   Thumb Code   270  bmi270_port.o(.text.bmi270_sensor_init_spi)
+    bmi270_set_config                        0x08003b05   Thumb Code   134  bmi270_port.o(.text.bmi270_set_config)
+    bmi2_delay_us                            0x08003b8d   Thumb Code    80  bmi270_port.o(.text.bmi2_delay_us)
+    bmi2_get_feat_config                     0x08003bdd   Thumb Code   756  bmi2.o(.text.bmi2_get_feat_config)
+    bmi2_get_feature_data                    0x08003ed1   Thumb Code   658  bmi2.o(.text.bmi2_get_feature_data)
+    bmi2_get_gyro_cross_sense                0x08004165   Thumb Code    80  bmi2.o(.text.bmi2_get_gyro_cross_sense)
+    bmi2_get_regs                            0x080041b5   Thumb Code   250  bmi2.o(.text.bmi2_get_regs)
+    bmi2_get_sensor_config                   0x080042b1   Thumb Code   878  bmi2.o(.text.bmi2_get_sensor_config)
+    bmi2_get_sensor_data                     0x08004621   Thumb Code   122  bmi2.o(.text.bmi2_get_sensor_data)
+    bmi2_parse_sensor_data                   0x0800469d   Thumb Code   330  bmi2.o(.text.bmi2_parse_sensor_data)
+    bmi2_sec_init                            0x080047e9   Thumb Code   226  bmi2.o(.text.bmi2_sec_init)
+    bmi2_sensor_enable                       0x080048cd   Thumb Code   722  bmi2.o(.text.bmi2_sensor_enable)
+    bmi2_set_adv_power_save                  0x08004ba1   Thumb Code   188  bmi2.o(.text.bmi2_set_adv_power_save)
+    bmi2_set_sensor_config                   0x08004c5d   Thumb Code  1598  bmi2.o(.text.bmi2_set_sensor_config)
+    bmi2_soft_reset                          0x0800529d   Thumb Code   216  bmi2.o(.text.bmi2_soft_reset)
+    bmi2_spi_read                            0x08005375   Thumb Code   270  bmi270_port.o(.text.bmi2_spi_read)
+    bmi2_spi_write                           0x08005485   Thumb Code   240  bmi270_port.o(.text.bmi2_spi_write)
+    bmi2_write_config_file                   0x08005575   Thumb Code   416  bmi2.o(.text.bmi2_write_config_file)
+    dodo_BMI270_get_data                     0x08005715   Thumb Code    86  dodo_bmi270.o(.text.dodo_BMI270_get_data)
+    dodo_BMI270_init                         0x0800576d   Thumb Code    74  dodo_bmi270.o(.text.dodo_BMI270_init)
+    main                                     0x080058a1   Thumb Code  1402  main.o(.text.main)
+    __scatterload_copy                       0x080062fd   Thumb Code    14  handlers.o(i.__scatterload_copy)
+    __scatterload_null                       0x0800630b   Thumb Code     2  handlers.o(i.__scatterload_null)
+    __scatterload_zeroinit                   0x0800630d   Thumb Code    14  handlers.o(i.__scatterload_zeroinit)
+    AHBPrescTable                            0x08006320   Data          16  system_stm32f1xx.o(.rodata.AHBPrescTable)
+    APBPrescTable                            0x08006330   Data           8  system_stm32f1xx.o(.rodata.APBPrescTable)
+    bmi270_config_file                       0x0800633a   Data        8192  bmi270.o(.rodata.bmi270_config_file)
+    bmi270_feat_in                           0x0800833a   Data          51  bmi270.o(.rodata.bmi270_feat_in)
+    bmi270_feat_out                          0x0800836d   Data          21  bmi270.o(.rodata.bmi270_feat_out)
+    Region$$Table$$Base                      0x08008394   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x080083b4   Number         0  anon$$obj.o(Region$$Table)
     uwTickFreq                               0x20000000   Data           1  stm32f1xx_hal.o(.data..L_MergedGlobals)
     uwTickPrio                               0x20000004   Data           4  stm32f1xx_hal.o(.data..L_MergedGlobals)
     BMI270_transition_factor                 0x20000008   Data           8  dodo_bmi270.o(.data.BMI270_transition_factor)
@@ -2827,9 +2827,9 @@ Memory Map of the image
 
   Image Entry point : 0x080000ed
 
-  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x000083b8, Max: 0x00010000, ABSOLUTE)
+  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x000083e0, Max: 0x00010000, ABSOLUTE)
 
-    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00008390, Max: 0x00010000, ABSOLUTE)
+    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x000083b4, Max: 0x00010000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -3008,82 +3008,81 @@ Memory Map of the image
     0x0800358c   0x0800358c   0x0000000c   Code   RO           99    .text.TIM2_IRQHandler  stm32f1xx_it.o
     0x08003598   0x08003598   0x0000000c   Code   RO          101    .text.TIM3_IRQHandler  stm32f1xx_it.o
     0x080035a4   0x080035a4   0x0000000c   Code   RO          103    .text.TIM4_IRQHandler  stm32f1xx_it.o
-    0x080035b0   0x080035b0   0x000001fa   Code   RO           33    .text.Turn_control  main.o
-    0x080037aa   0x080037aa   0x00000002   PAD
-    0x080037ac   0x080037ac   0x0000000c   Code   RO         1004    .text.UART_DMAAbortOnError  stm32f1xx_hal_uart.o
-    0x080037b8   0x080037b8   0x000000fe   Code   RO         1002    .text.UART_Receive_IT  stm32f1xx_hal_uart.o
-    0x080038b6   0x080038b6   0x00000002   PAD
-    0x080038b8   0x080038b8   0x0000000c   Code   RO          107    .text.USART3_IRQHandler  stm32f1xx_it.o
-    0x080038c4   0x080038c4   0x00000002   Code   RO           83    .text.UsageFault_Handler  stm32f1xx_it.o
-    0x080038c6   0x080038c6   0x00000002   PAD
-    0x080038c8   0x080038c8   0x00000076   Code   RO         1302    .text.bmi270_get_accel_gyro  bmi270_port.o
-    0x0800393e   0x0800393e   0x00000002   PAD
-    0x08003940   0x08003940   0x00000090   Code   RO         1258    .text.bmi270_init   bmi270.o
-    0x080039d0   0x080039d0   0x0000010e   Code   RO         1298    .text.bmi270_sensor_init_spi  bmi270_port.o
-    0x08003ade   0x08003ade   0x00000002   PAD
-    0x08003ae0   0x08003ae0   0x00000086   Code   RO         1300    .text.bmi270_set_config  bmi270_port.o
-    0x08003b66   0x08003b66   0x00000002   PAD
-    0x08003b68   0x08003b68   0x00000050   Code   RO         1296    .text.bmi2_delay_us  bmi270_port.o
-    0x08003bb8   0x08003bb8   0x000002f4   Code   RO         1211    .text.bmi2_get_feat_config  bmi2.o
-    0x08003eac   0x08003eac   0x00000292   Code   RO         1095    .text.bmi2_get_feature_data  bmi2.o
-    0x0800413e   0x0800413e   0x00000002   PAD
-    0x08004140   0x08004140   0x00000050   Code   RO         1205    .text.bmi2_get_gyro_cross_sense  bmi2.o
-    0x08004190   0x08004190   0x000000fa   Code   RO         1061    .text.bmi2_get_regs  bmi2.o
-    0x0800428a   0x0800428a   0x00000002   PAD
-    0x0800428c   0x0800428c   0x0000036e   Code   RO         1093    .text.bmi2_get_sensor_config  bmi2.o
-    0x080045fa   0x080045fa   0x00000002   PAD
-    0x080045fc   0x080045fc   0x0000007a   Code   RO         1097    .text.bmi2_get_sensor_data  bmi2.o
-    0x08004676   0x08004676   0x00000002   PAD
-    0x08004678   0x08004678   0x0000014a   Code   RO         1099    .text.bmi2_parse_sensor_data  bmi2.o
-    0x080047c2   0x080047c2   0x00000002   PAD
-    0x080047c4   0x080047c4   0x000000e2   Code   RO         1059    .text.bmi2_sec_init  bmi2.o
-    0x080048a6   0x080048a6   0x00000002   PAD
-    0x080048a8   0x080048a8   0x000002d2   Code   RO         1083    .text.bmi2_sensor_enable  bmi2.o
-    0x08004b7a   0x08004b7a   0x00000002   PAD
-    0x08004b7c   0x08004b7c   0x000000bc   Code   RO         1071    .text.bmi2_set_adv_power_save  bmi2.o
-    0x08004c38   0x08004c38   0x0000063e   Code   RO         1087    .text.bmi2_set_sensor_config  bmi2.o
-    0x08005276   0x08005276   0x00000002   PAD
-    0x08005278   0x08005278   0x000000d8   Code   RO         1063    .text.bmi2_soft_reset  bmi2.o
-    0x08005350   0x08005350   0x0000010e   Code   RO         1288    .text.bmi2_spi_read  bmi270_port.o
-    0x0800545e   0x0800545e   0x00000002   PAD
-    0x08005460   0x08005460   0x000000f0   Code   RO         1290    .text.bmi2_spi_write  bmi270_port.o
-    0x08005550   0x08005550   0x000001a0   Code   RO         1067    .text.bmi2_write_config_file  bmi2.o
-    0x080056f0   0x080056f0   0x00000056   Code   RO         1318    .text.dodo_BMI270_get_data  dodo_bmi270.o
-    0x08005746   0x08005746   0x00000002   PAD
-    0x08005748   0x08005748   0x0000004a   Code   RO         1316    .text.dodo_BMI270_init  dodo_bmi270.o
-    0x08005792   0x08005792   0x00000002   PAD
-    0x08005794   0x08005794   0x000000e6   Code   RO         1239    .text.get_aux_interface_config  bmi2.o
-    0x0800587a   0x0800587a   0x00000002   PAD
-    0x0800587c   0x0800587c   0x0000057a   Code   RO           43    .text.main          main.o
-    0x08005df6   0x08005df6   0x00000002   PAD
-    0x08005df8   0x08005df8   0x00000168   Code   RO         1089    .text.set_accel_config  bmi2.o
-    0x08005f60   0x08005f60   0x000000b0   Code   RO         1235    .text.set_config_load  bmi2.o
-    0x08006010   0x08006010   0x000001b8   Code   RO         1091    .text.set_gyro_config  bmi2.o
-    0x080061c8   0x080061c8   0x00000110   Code   RO         1237    .text.upload_file   bmi2.o
-    0x080062d8   0x080062d8   0x0000000e   Code   RO         1396    i.__scatterload_copy  mc_w.l(handlers.o)
-    0x080062e6   0x080062e6   0x00000002   Code   RO         1397    i.__scatterload_null  mc_w.l(handlers.o)
-    0x080062e8   0x080062e8   0x0000000e   Code   RO         1398    i.__scatterload_zeroinit  mc_w.l(handlers.o)
-    0x080062f6   0x080062f6   0x00000006   Data   RO         1249    .rodata..L__const.bmi2_sec_init.axes_remap  bmi2.o
-    0x080062fc   0x080062fc   0x00000010   Data   RO         1049    .rodata.AHBPrescTable  system_stm32f1xx.o
-    0x0800630c   0x0800630c   0x00000008   Data   RO         1050    .rodata.APBPrescTable  system_stm32f1xx.o
-    0x08006314   0x08006314   0x00000002   Data   RO          361    .rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable  stm32f1xx_hal_rcc.o
-    0x08006316   0x08006316   0x00002000   Data   RO         1276    .rodata.bmi270_config_file  bmi270.o
-    0x08008316   0x08008316   0x00000033   Data   RO         1277    .rodata.bmi270_feat_in  bmi270.o
-    0x08008349   0x08008349   0x00000015   Data   RO         1278    .rodata.bmi270_feat_out  bmi270.o
-    0x0800835e   0x0800835e   0x00000010   Data   RO          360    .rodata.cst16       stm32f1xx_hal_rcc.o
-    0x0800836e   0x0800836e   0x00000002   PAD
-    0x08008370   0x08008370   0x00000020   Data   RO         1395    Region$$Table       anon$$obj.o
+    0x080035b0   0x080035b0   0x00000220   Code   RO           33    .text.Turn_control  main.o
+    0x080037d0   0x080037d0   0x0000000c   Code   RO         1004    .text.UART_DMAAbortOnError  stm32f1xx_hal_uart.o
+    0x080037dc   0x080037dc   0x000000fe   Code   RO         1002    .text.UART_Receive_IT  stm32f1xx_hal_uart.o
+    0x080038da   0x080038da   0x00000002   PAD
+    0x080038dc   0x080038dc   0x0000000c   Code   RO          107    .text.USART3_IRQHandler  stm32f1xx_it.o
+    0x080038e8   0x080038e8   0x00000002   Code   RO           83    .text.UsageFault_Handler  stm32f1xx_it.o
+    0x080038ea   0x080038ea   0x00000002   PAD
+    0x080038ec   0x080038ec   0x00000076   Code   RO         1302    .text.bmi270_get_accel_gyro  bmi270_port.o
+    0x08003962   0x08003962   0x00000002   PAD
+    0x08003964   0x08003964   0x00000090   Code   RO         1258    .text.bmi270_init   bmi270.o
+    0x080039f4   0x080039f4   0x0000010e   Code   RO         1298    .text.bmi270_sensor_init_spi  bmi270_port.o
+    0x08003b02   0x08003b02   0x00000002   PAD
+    0x08003b04   0x08003b04   0x00000086   Code   RO         1300    .text.bmi270_set_config  bmi270_port.o
+    0x08003b8a   0x08003b8a   0x00000002   PAD
+    0x08003b8c   0x08003b8c   0x00000050   Code   RO         1296    .text.bmi2_delay_us  bmi270_port.o
+    0x08003bdc   0x08003bdc   0x000002f4   Code   RO         1211    .text.bmi2_get_feat_config  bmi2.o
+    0x08003ed0   0x08003ed0   0x00000292   Code   RO         1095    .text.bmi2_get_feature_data  bmi2.o
+    0x08004162   0x08004162   0x00000002   PAD
+    0x08004164   0x08004164   0x00000050   Code   RO         1205    .text.bmi2_get_gyro_cross_sense  bmi2.o
+    0x080041b4   0x080041b4   0x000000fa   Code   RO         1061    .text.bmi2_get_regs  bmi2.o
+    0x080042ae   0x080042ae   0x00000002   PAD
+    0x080042b0   0x080042b0   0x0000036e   Code   RO         1093    .text.bmi2_get_sensor_config  bmi2.o
+    0x0800461e   0x0800461e   0x00000002   PAD
+    0x08004620   0x08004620   0x0000007a   Code   RO         1097    .text.bmi2_get_sensor_data  bmi2.o
+    0x0800469a   0x0800469a   0x00000002   PAD
+    0x0800469c   0x0800469c   0x0000014a   Code   RO         1099    .text.bmi2_parse_sensor_data  bmi2.o
+    0x080047e6   0x080047e6   0x00000002   PAD
+    0x080047e8   0x080047e8   0x000000e2   Code   RO         1059    .text.bmi2_sec_init  bmi2.o
+    0x080048ca   0x080048ca   0x00000002   PAD
+    0x080048cc   0x080048cc   0x000002d2   Code   RO         1083    .text.bmi2_sensor_enable  bmi2.o
+    0x08004b9e   0x08004b9e   0x00000002   PAD
+    0x08004ba0   0x08004ba0   0x000000bc   Code   RO         1071    .text.bmi2_set_adv_power_save  bmi2.o
+    0x08004c5c   0x08004c5c   0x0000063e   Code   RO         1087    .text.bmi2_set_sensor_config  bmi2.o
+    0x0800529a   0x0800529a   0x00000002   PAD
+    0x0800529c   0x0800529c   0x000000d8   Code   RO         1063    .text.bmi2_soft_reset  bmi2.o
+    0x08005374   0x08005374   0x0000010e   Code   RO         1288    .text.bmi2_spi_read  bmi270_port.o
+    0x08005482   0x08005482   0x00000002   PAD
+    0x08005484   0x08005484   0x000000f0   Code   RO         1290    .text.bmi2_spi_write  bmi270_port.o
+    0x08005574   0x08005574   0x000001a0   Code   RO         1067    .text.bmi2_write_config_file  bmi2.o
+    0x08005714   0x08005714   0x00000056   Code   RO         1318    .text.dodo_BMI270_get_data  dodo_bmi270.o
+    0x0800576a   0x0800576a   0x00000002   PAD
+    0x0800576c   0x0800576c   0x0000004a   Code   RO         1316    .text.dodo_BMI270_init  dodo_bmi270.o
+    0x080057b6   0x080057b6   0x00000002   PAD
+    0x080057b8   0x080057b8   0x000000e6   Code   RO         1239    .text.get_aux_interface_config  bmi2.o
+    0x0800589e   0x0800589e   0x00000002   PAD
+    0x080058a0   0x080058a0   0x0000057a   Code   RO           43    .text.main          main.o
+    0x08005e1a   0x08005e1a   0x00000002   PAD
+    0x08005e1c   0x08005e1c   0x00000168   Code   RO         1089    .text.set_accel_config  bmi2.o
+    0x08005f84   0x08005f84   0x000000b0   Code   RO         1235    .text.set_config_load  bmi2.o
+    0x08006034   0x08006034   0x000001b8   Code   RO         1091    .text.set_gyro_config  bmi2.o
+    0x080061ec   0x080061ec   0x00000110   Code   RO         1237    .text.upload_file   bmi2.o
+    0x080062fc   0x080062fc   0x0000000e   Code   RO         1396    i.__scatterload_copy  mc_w.l(handlers.o)
+    0x0800630a   0x0800630a   0x00000002   Code   RO         1397    i.__scatterload_null  mc_w.l(handlers.o)
+    0x0800630c   0x0800630c   0x0000000e   Code   RO         1398    i.__scatterload_zeroinit  mc_w.l(handlers.o)
+    0x0800631a   0x0800631a   0x00000006   Data   RO         1249    .rodata..L__const.bmi2_sec_init.axes_remap  bmi2.o
+    0x08006320   0x08006320   0x00000010   Data   RO         1049    .rodata.AHBPrescTable  system_stm32f1xx.o
+    0x08006330   0x08006330   0x00000008   Data   RO         1050    .rodata.APBPrescTable  system_stm32f1xx.o
+    0x08006338   0x08006338   0x00000002   Data   RO          361    .rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable  stm32f1xx_hal_rcc.o
+    0x0800633a   0x0800633a   0x00002000   Data   RO         1276    .rodata.bmi270_config_file  bmi270.o
+    0x0800833a   0x0800833a   0x00000033   Data   RO         1277    .rodata.bmi270_feat_in  bmi270.o
+    0x0800836d   0x0800836d   0x00000015   Data   RO         1278    .rodata.bmi270_feat_out  bmi270.o
+    0x08008382   0x08008382   0x00000010   Data   RO          360    .rodata.cst16       stm32f1xx_hal_rcc.o
+    0x08008392   0x08008392   0x00000002   PAD
+    0x08008394   0x08008394   0x00000020   Data   RO         1395    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08008390, Size: 0x00002870, Max: 0x00005000, ABSOLUTE)
+    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x080083b8, Size: 0x00002870, Max: 0x00005000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x20000000   0x08008390   0x00000008   Data   RW          323    .data..L_MergedGlobals  stm32f1xx_hal.o
-    0x20000008   0x08008398   0x00000008   Data   RW         1320    .data.BMI270_transition_factor  dodo_bmi270.o
-    0x20000010   0x080083a0   0x00000004   Data   RW         1048    .data.SystemCoreClock  system_stm32f1xx.o
-    0x20000014   0x080083a4   0x00000010   Data   RW         1279    .data.bmi270_map_int  bmi270.o
-    0x20000024   0x080083b4   0x00000004   Data   RW           49    .data.valid_count_address  main.o
+    0x20000000   0x080083b8   0x00000008   Data   RW          323    .data..L_MergedGlobals  stm32f1xx_hal.o
+    0x20000008   0x080083c0   0x00000008   Data   RW         1320    .data.BMI270_transition_factor  dodo_bmi270.o
+    0x20000010   0x080083c8   0x00000004   Data   RW         1048    .data.SystemCoreClock  system_stm32f1xx.o
+    0x20000014   0x080083cc   0x00000010   Data   RW         1279    .data.bmi270_map_int  bmi270.o
+    0x20000024   0x080083dc   0x00000004   Data   RW           49    .data.valid_count_address  main.o
     0x20000028        -       0x00000078   Zero   RW           64    .bss..L_MergedGlobals  main.o
     0x200000a0        -       0x00000008   Zero   RW         1307    .bss..L_MergedGlobals  bmi270_port.o
     0x200000a8        -       0x00000060   Zero   RW         1322    .bss..L_MergedGlobals  dodo_bmi270.o
@@ -3101,7 +3100,7 @@ Memory Map of the image
     0x200023d8        -       0x00000048   Zero   RW           51    .bss.htim3          main.o
     0x20002420        -       0x00000048   Zero   RW           52    .bss.huart3         main.o
     0x20002468        -       0x00000004   Zero   RW          322    .bss.uwTick         stm32f1xx_hal.o
-    0x2000246c   0x080083b8   0x00000004   PAD
+    0x2000246c   0x080083e0   0x00000004   PAD
     0x20002470        -       0x00000400   Zero   RW            1    STACK               startup_stm32f103xb.o
 
 
@@ -3116,7 +3115,7 @@ Image component sizes
        144          0       8264         16          0      45995   bmi270.o
       1172          0          0          0       8200      15735   bmi270_port.o
        160          0          0          8        200       4032   dodo_bmi270.o
-      3700          0          0          4        880      20357   main.o
+      3738          0          0          4        880      20387   main.o
        210          0          0          0          0       2892   multiplexer.o
         36          8        236          0       1024        824   startup_stm32f103xb.o
        148          0          0          8          4       5802   stm32f1xx_hal.o
@@ -3133,9 +3132,9 @@ Image component sizes
          2          0         24          4          0       1682   system_stm32f1xx.o
 
     ----------------------------------------------------------------------
-     24248        272       8582         40      10312     496378   Object Totals
+     24284        272       8582         40      10312     496408   Object Totals
          0          0         32          0          0          0   (incl. Generated)
-       150          0          2          0          4          0   (incl. Padding)
+       148          0          2          0          4          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -3187,15 +3186,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     25098        288       8582         40      10312     496822   Grand Totals
-     25098        288       8582         40      10312     496822   ELF Image Totals
-     25098        288       8582         40          0          0   ROM Totals
+     25134        288       8582         40      10312     496852   Grand Totals
+     25134        288       8582         40      10312     496852   ELF Image Totals
+     25134        288       8582         40          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                33680 (  32.89kB)
+    Total RO  Size (Code + RO Data)                33716 (  32.93kB)
     Total RW  Size (RW Data + ZI Data)             10352 (  10.11kB)
-    Total ROM Size (Code + RO Data + RW Data)      33720 (  32.93kB)
+    Total ROM Size (Code + RO Data + RW Data)      33756 (  32.96kB)
 
 ==============================================================================
 
