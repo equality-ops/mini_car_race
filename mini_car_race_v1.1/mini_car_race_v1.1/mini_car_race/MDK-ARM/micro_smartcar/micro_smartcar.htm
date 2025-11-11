@@ -3,7 +3,7 @@
 <title>Static Call Graph - [micro_smartcar\micro_smartcar.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image micro_smartcar\micro_smartcar.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Wed Nov 12 00:04:45 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Wed Nov 12 00:48:32 2025
 <BR><P>
 <H3>Maximum Stack Usage =        744 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -302,7 +302,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[5d]"></a>__aeabi_fcmpge</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, fcmpge.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ComeputePID_Position
+<BR><BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Turn_control
+<LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ComeputePID_Position
 </UL>
 
 <P><STRONG><a name="[5a]"></a>__aeabi_fcmpgt</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, fcmpgt.o(.text))
@@ -447,7 +448,7 @@ Global Symbols
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Turn_control
 </UL>
 
-<P><STRONG><a name="[5e]"></a>Compute_target</STRONG> (Thumb, 304 bytes, Stack size 8 bytes, main.o(.text.Compute_target))
+<P><STRONG><a name="[5e]"></a>Compute_target</STRONG> (Thumb, 336 bytes, Stack size 8 bytes, main.o(.text.Compute_target))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = Compute_target &rArr; __aeabi_fsub &rArr; __aeabi_fadd &rArr; _float_epilogue
 </UL>
 <BR>[Calls]<UL><LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
@@ -991,7 +992,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[84]"></a>Turn_control</STRONG> (Thumb, 572 bytes, Stack size 32 bytes, main.o(.text.Turn_control))
+<P><STRONG><a name="[84]"></a>Turn_control</STRONG> (Thumb, 642 bytes, Stack size 32 bytes, main.o(.text.Turn_control))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = Turn_control &rArr; __aeabi_dmul &rArr; _double_epilogue &rArr; _double_round
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dcmpge
@@ -999,6 +1000,7 @@ Global Symbols
 <LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2d
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmplt
+<LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmpge
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
 <LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmpgt
 <LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ComeputePID_Position
