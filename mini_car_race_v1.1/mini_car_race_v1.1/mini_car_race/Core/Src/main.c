@@ -51,12 +51,13 @@ typedef struct PIDcontrol
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PHOTO_NUM 12             // 光电管数量
-#define integralLimit 20000      // 积分最大值
-#define FILTER_SIZE 5           // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100    // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 70       // 高速基准速度
-#define LOW_BASE_SPEED 40        // 低速基准速度     
+#define PHOTO_NUM 12              // 光电管数量
+#define integralLimit 20000       // 积分最大值
+#define FILTER_SIZE 5             // 微分滤波窗口数量
+#define FILTER_SIZE_ERROR 100     // 光电管误差滤波窗口数量
+#define HIGH_BASE_SPEED 70        // 高速基准速度
+#define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -72,12 +73,13 @@ typedef struct PIDcontrol
 
 #define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f // 直角转弯时的kd值
+#define RIGHT_ANGLE_TURN_GKD 0.3f // 直角转弯时的GKD值
 #define Lose_line_KP 0.25f         // 丢线时的kp值
 #define lose_line_KD 0.08f        // 丢线时的kd值
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 7           // 直角转弯的检测次数
+#define DETECT_TIMES 5           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
@@ -145,6 +147,7 @@ volatile static float weighted_sum_record = 0; // 上一次光电管误差记录
 
 volatile static float record_kp = 0.0f;                  // 用于记录转向环kp值
 volatile static float record_kd = 0.0f;                  // 用于记录转向环kd值
+volatile static float record_gkd = 0.0f;                 // 用于记录转向环gkd值
 
 volatile static int8_t if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;   // 是否处于直角转弯模式标志
 
@@ -370,11 +373,15 @@ void Compute_target(int8_t motor)
   {
     if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_left.target = LOW_BASE_SPEED - direction_pid.output;
+      speed_pid_left.target = TURN_BASE_SPEED - direction_pid.output;
     }
     else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE) // 恢复模式下基准速度线性增长恢复到HIGH_BASE_SPEED
     {
-      speed_pid_left.target = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
+      speed_pid_left.target = TURN_BASE_SPEED + (HIGH_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
+    }
+    else if(if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE && detect_flags >= 1)
+    {
+      speed_pid_left.target = READY_TURN_BASE_SPEED - direction_pid.output;
     }
     else // 一般情况
     {
@@ -385,11 +392,15 @@ void Compute_target(int8_t motor)
   {
     if(if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_right.target = LOW_BASE_SPEED + direction_pid.output;
+      speed_pid_right.target = TURN_BASE_SPEED + direction_pid.output;
     }
     else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE) // 恢复模式下基准速度线性增长恢复到HIGH_BASE_SPEED
     {
-      speed_pid_right.target = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
+      speed_pid_right.target = TURN_BASE_SPEED + (HIGH_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
+    }
+    else if(if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE && detect_flags >= 1)
+    {
+      speed_pid_right.target = READY_TURN_BASE_SPEED + direction_pid.output;
     }
     else // 一般情况
     {
@@ -400,8 +411,8 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.1f;
-  direction_pid.kp2 = 0.0001f;
+  direction_pid.kp = 0.13f;
+  direction_pid.kp2 = 0.0002f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.1f;
@@ -425,15 +436,14 @@ void PID_Init(void)
 
   record_kp = direction_pid.kp; // 记录最初的转向环kp值
   record_kd = direction_pid.kd; // 记录最初的转向环kd值
+  record_gkd = direction_pid.GKD; // 记录最初的转向环GKD值
 }
 
 float Right_angle_mode(void) // 直角转弯模式函数
 {
-  //直角转弯模式下kp随时间线性变化
-  float comepute_kp = (float)RIGHT_ANGLE_TURN_KP - (RIGHT_ANGLE_TURN_KP - record_kp) * (float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT; 
-  
-  direction_pid.kp = comepute_kp;
+  direction_pid.kp = RIGHT_ANGLE_TURN_KP;
   direction_pid.kd = RIGHT_ANGLE_TURN_KD;
+  direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
   right_angle_turn_count++;
   return record_error; // 返回已经记录的误差
 }
@@ -495,7 +505,7 @@ void Turn_control(void)
 
     if(if_right_angle_turn_mode != RESTORE_NORMAL_MODE)
     {
-      if(((*valid_count_address >= 7 && *valid_count_address <= 9) && (fabs(photo_error) >= 119.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+      if(((*valid_count_address >= 7 && *valid_count_address <= 9) && (fabs(photo_error) * (*valid_count_address) >= 1079.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
       { // 直角转弯情况
         if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
         {
@@ -549,6 +559,7 @@ void Turn_control(void)
     if(restore_count >= RESTORE_NORMAL_COUNT) // 退出恢复模式并进入正常模式
     {
       if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; 
+      direction_pid.GKD = record_gkd; // 恢复平时的GKD
       record_error = 0.0f; // 直角弯误差记录重置
       restore_count = 0; // 恢复计数器重置
     }
