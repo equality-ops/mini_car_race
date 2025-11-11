@@ -73,7 +73,7 @@ typedef struct PIDcontrol
 
 #define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD 0.3f // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.3f // 直角转弯时的GKD值
 #define Lose_line_KP 0.25f         // 丢线时的kp值
 #define lose_line_KD 0.08f        // 丢线时的kd值
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
