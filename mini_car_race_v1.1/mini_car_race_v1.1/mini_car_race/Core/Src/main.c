@@ -79,7 +79,7 @@ typedef struct PIDcontrol
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 5           // 直角转弯的检测次数
+#define DETECT_TIMES 2           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
@@ -531,7 +531,8 @@ void Turn_control(void)
       }
       else // 一般情况
       {
-        if((fabs(photo_error) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
+        //if((fabs(photo_error) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
+        if(1) // 准备进入直角转弯模式
         {
           if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; 
         }
