@@ -27,11 +27,17 @@ Project File Date:  11/04/2025
 <h2>Output:</h2>
 *** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
 Build target 'micro_smartcar'
+../Core/Src/main.c(504): warning: implicit declaration of function 'FindMax_WeightedValue' is invalid in C99 [-Wimplicit-function-declaration]
+    Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
+                ^
+1 warning generated.
 compiling main.c...
 linking...
-Program Size: Code=25842 RO-data=8582 RW-data=40 ZI-data=10720  
-FromELF: creating hex file...
-"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 0 Warning(s).
+micro_smartcar\micro_smartcar.axf: Error: L6218E: Undefined symbol FindMax_WeightedValue (referred from main.o).
+Not enough information to list image symbols.
+Not enough information to list load addresses in the image map.
+Finished: 2 information, 0 warning and 1 error messages.
+"micro_smartcar\micro_smartcar.axf" - 1 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -55,7 +61,8 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Target not created.
+Build Time Elapsed:  00:00:00
 </pre>
 </body>
 </html>

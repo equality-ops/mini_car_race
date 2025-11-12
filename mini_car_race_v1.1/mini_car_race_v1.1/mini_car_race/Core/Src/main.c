@@ -54,7 +54,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100     // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 10     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
@@ -82,7 +82,7 @@ typedef struct PIDcontrol
 #define DETECT_TIMES 4           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
-#define RESTORE_NORMAL_COUNT 500     // 恢复模式计数器阈值
+#define RESTORE_NORMAL_COUNT 300     // 恢复模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
@@ -170,21 +170,21 @@ static void MX_USART3_UART_Init(void);
 
 // 参数说明：weighted_value 光电管误差，diff_buffer_photo_error 光电管误差缓冲区
 // 功能：更新缓冲区,寻找光电管误差最大值并返回
-float FindMax_WeightedValue(float weighted_value, volatile float dierroff_buffer_photo_error[])
+float FindMin_WeightedValue(float weighted_value, volatile float dierroff_buffer_photo_error[])
 { // 光电管误差寻最大值函数
   // 更新滑动窗口
   dierroff_buffer_photo_error[buf_index_error] = weighted_value;
   buf_index_error = (buf_index_error + 1) % FILTER_SIZE_ERROR;
   // 寻找最大值并返回
-  float MAX = dierroff_buffer_photo_error[0];
+  float MIN = dierroff_buffer_photo_error[0];
   for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
   {
-    if (fabs(dierroff_buffer_photo_error[i]) > fabs(MAX))
+    if (fabs(dierroff_buffer_photo_error[i]) < fabs(MIN))
     {
-      MAX = dierroff_buffer_photo_error[i];
+      MIN = dierroff_buffer_photo_error[i];
     }
   }
-  return MAX;
+  return MIN;
 }
 
 float Calculate_Photo_Error(void)
