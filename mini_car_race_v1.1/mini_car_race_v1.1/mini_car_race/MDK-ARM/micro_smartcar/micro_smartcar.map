@@ -26,7 +26,7 @@ Section Cross References
     startup_stm32f103xb.o(.text) refers to system_stm32f1xx.o(.text.SystemInit) for SystemInit
     startup_stm32f103xb.o(.text) refers to entry.o(.ARM.Collect$$$$00000000) for __main
     main.o(.text.FindMax_WeightedValue) refers to main.o(.bss..L_MergedGlobals) for .L_MergedGlobals
-    main.o(.text.FindMax_WeightedValue) refers to fcmple.o(.text) for __aeabi_fcmple
+    main.o(.text.FindMax_WeightedValue) refers to fcmpge.o(.text) for __aeabi_fcmpge
     main.o(.ARM.exidx.text.FindMax_WeightedValue) refers to main.o(.text.FindMax_WeightedValue) for [Anonymous Symbol]
     main.o(.text.Calculate_Photo_Error) refers to main.o(.bss..L_MergedGlobals) for .L_MergedGlobals
     main.o(.text.Calculate_Photo_Error) refers to multiplexer.o(.text.MUX_get_value) for MUX_get_value
@@ -89,7 +89,7 @@ Section Cross References
     main.o(.text.Turn_control) refers to main.o(.bss..L_MergedGlobals) for .L_MergedGlobals
     main.o(.text.Turn_control) refers to main.o(.text.Calculate_Photo_Error) for Calculate_Photo_Error
     main.o(.text.Turn_control) refers to main.o(.bss.diff_buffer_photo_error) for diff_buffer_photo_error
-    main.o(.text.Turn_control) refers to fcmple.o(.text) for __aeabi_fcmple
+    main.o(.text.Turn_control) refers to fcmpge.o(.text) for __aeabi_fcmpge
     main.o(.text.Turn_control) refers to main.o(.bss..L_MergedGlobals.1) for .L_MergedGlobals.1
     main.o(.text.Turn_control) refers to fcmpeq.o(.text) for __aeabi_fcmpeq
     main.o(.text.Turn_control) refers to ffixi.o(.text) for __aeabi_f2iz
@@ -99,7 +99,6 @@ Section Cross References
     main.o(.text.Turn_control) refers to dfltui.o(.text) for __aeabi_ui2d
     main.o(.text.Turn_control) refers to dmul.o(.text) for __aeabi_dmul
     main.o(.text.Turn_control) refers to dcmpge.o(.text) for __aeabi_dcmpge
-    main.o(.text.Turn_control) refers to fcmpge.o(.text) for __aeabi_fcmpge
     main.o(.text.Turn_control) refers to fcmpgt.o(.text) for __aeabi_fcmpgt
     main.o(.text.Turn_control) refers to fcmplt.o(.text) for __aeabi_fcmplt
     main.o(.ARM.exidx.text.Turn_control) refers to main.o(.text.Turn_control) for [Anonymous Symbol]
