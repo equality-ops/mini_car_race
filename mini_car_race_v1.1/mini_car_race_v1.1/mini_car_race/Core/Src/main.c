@@ -54,8 +54,8 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 10     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 70        // 高速基准速度
+#define FILTER_SIZE_ERROR 50     // 光电管误差滤波窗口数量
+#define HIGH_BASE_SPEED 50        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
@@ -82,7 +82,7 @@ typedef struct PIDcontrol
 #define DETECT_TIMES 4           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
-#define RESTORE_NORMAL_COUNT 300     // 恢复模式计数器阈值
+#define RESTORE_NORMAL_COUNT 100     // 恢复模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
@@ -128,9 +128,10 @@ volatile static int16_t buf_index_gyro_z = 0;  // 陀螺仪数据索引
 
 volatile static float buf[100];  // UART发送缓冲区
 
-volatile static float Error_MAX = 0.0f; // 光电管误差最大值
+volatile static float Error_record = 0.0f; // 光电管误差最大值
 
 volatile static float record_error = 0.0f;    // 直角转弯时光电管误差记录
+volatile static float record_result = 0.0f;   // 光电管最大最小误差记录
 
 volatile static int8_t detect_flags = 0;  //直角弯检测次数
 
@@ -170,22 +171,44 @@ static void MX_USART3_UART_Init(void);
 
 // 参数说明：weighted_value 光电管误差，diff_buffer_photo_error 光电管误差缓冲区
 // 功能：更新缓冲区,寻找光电管误差最大值并返回
-float FindMin_WeightedValue(float weighted_value, volatile float dierroff_buffer_photo_error[])
-{ // 光电管误差寻最大值函数
+float Find_WeightedValue(float weighted_value, volatile float dierroff_buffer_photo_error[], float photo_error)
+{ // 光电管误差寻最大最小值函数
   // 更新滑动窗口
   dierroff_buffer_photo_error[buf_index_error] = weighted_value;
   buf_index_error = (buf_index_error + 1) % FILTER_SIZE_ERROR;
-  // 寻找最大值并返回
-  float MIN = dierroff_buffer_photo_error[0];
-  for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
+  // 寻找最大或者最小值并返回
+  float result = dierroff_buffer_photo_error[0];
+  if(photo_error != 9999)
   {
-    if (fabs(dierroff_buffer_photo_error[i]) < fabs(MIN))
+    if(fabs(photo_error) * (*valid_count_address) <= 361.0f) 
     {
-      MIN = dierroff_buffer_photo_error[i];
+      for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
+      {
+        if (fabs(dierroff_buffer_photo_error[i]) < fabs(result))
+        {
+          result = dierroff_buffer_photo_error[i];
+        }
+      }
     }
+    else
+    {
+      for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
+      {
+        if (fabs(dierroff_buffer_photo_error[i]) > fabs(result))
+        {
+          result = dierroff_buffer_photo_error[i];
+        }
+      }
+    } 
+    record_result = result;
+    return record_result;
   }
-  return MIN;
+  else
+  {
+    return record_result;
+  }
 }
+
 
 float Calculate_Photo_Error(void)
 { // 光电管误差计算函数
@@ -501,7 +524,7 @@ void Turn_control(void)
   {
     float photo_error = Calculate_Photo_Error();
     
-    Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
+    Error_record = Find_WeightedValue(weighted_sum_record, diff_buffer_photo_error, photo_error); // 更新光电管误差最大值
 
     if(if_right_angle_turn_mode != RESTORE_NORMAL_MODE)
     {
@@ -525,7 +548,7 @@ void Turn_control(void)
       {  
         direction_pid.kp = Lose_line_KP;
         direction_pid.kd = lose_line_KD;
-        photo_error = Error_MAX; // 保持前一段路程的最大误差
+        photo_error = Error_record; // 保持前一段路程的最大误差
         detect_flags = 0; // 直角弯检测次数重置
         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
       }
