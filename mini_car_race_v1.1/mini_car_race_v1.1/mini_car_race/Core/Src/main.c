@@ -54,7 +54,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 50     // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 100     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 50        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
@@ -67,7 +67,7 @@ typedef struct PIDcontrol
 #define TURN_OUTPUTMIN -3000     // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
-#define PHOTO_ERROR_LIMIt 370.0f // 判断直角弯的光电管误差阈值
+#define PHOTO_ERROR_LIMIT 370.0f // 判断直角弯的光电管误差阈值
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
@@ -92,6 +92,9 @@ typedef struct PIDcontrol
 #define EXIT_RIGHT_ANGLE_MODE 0    // 退出直角转弯模式标志
 #define READY_RIGHT_ANGLE_MODE 2   // 准备进入直角转弯模式标志
 #define RESTORE_NORMAL_MODE 3      // 进入恢复模式标志
+
+#define STRAIGHT_LINE 0            // 直线情况
+#define TURN_LINE    0            // 转弯情况
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -132,6 +135,7 @@ volatile static float Error_record = 0.0f; // 光电管误差最大值
 
 volatile static float record_error = 0.0f;    // 直角转弯时光电管误差记录
 volatile static float record_result = 0.0f;   // 光电管最大最小误差记录
+volatile static int8_t detect_mode = -1;
 
 volatile static int8_t detect_flags = 0;  //直角弯检测次数
 
@@ -173,41 +177,52 @@ static void MX_USART3_UART_Init(void);
 // 功能：更新缓冲区,寻找光电管误差最大值并返回
 float Find_WeightedValue(float weighted_value, volatile float dierroff_buffer_photo_error[], float photo_error)
 { // 光电管误差寻最大最小值函数
-  // 更新滑动窗口
-  dierroff_buffer_photo_error[buf_index_error] = weighted_value;
-  buf_index_error = (buf_index_error + 1) % FILTER_SIZE_ERROR;
+  if(photo_error != 9999)
+  {
+    // 更新滑动窗口
+    dierroff_buffer_photo_error[buf_index_error] = weighted_value;
+    buf_index_error = (buf_index_error + 1) % FILTER_SIZE_ERROR;
+  }
   // 寻找最大或者最小值并返回
   float result = dierroff_buffer_photo_error[0];
   if(photo_error != 9999)
   {
     if(fabs(photo_error) * (*valid_count_address) <= 361.0f) 
     {
-      for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
-      {
-        if (fabs(dierroff_buffer_photo_error[i]) < fabs(result))
-        {
-          result = dierroff_buffer_photo_error[i];
-        }
-      }
+      detect_mode = STRAIGHT_LINE;
     }
     else
     {
-      for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
-      {
-        if (fabs(dierroff_buffer_photo_error[i]) > fabs(result))
-        {
-          result = dierroff_buffer_photo_error[i];
-        }
-      }
+      detect_mode = TURN_LINE; 
     } 
-    record_result = result;
-    return record_result;
+    return 0;
   }
   else
   {
-    return record_result;
+  if(detect_mode == STRAIGHT_LINE)
+  {
+    for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
+    {
+      if (fabs(dierroff_buffer_photo_error[i]) < fabs(result))
+      {
+        result = dierroff_buffer_photo_error[i];
+      }
+    }
   }
+  else if(detect_mode == TURN_LINE)
+  {
+    for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
+    {
+      if (fabs(dierroff_buffer_photo_error[i]) > fabs(result))
+      {
+        result = dierroff_buffer_photo_error[i];
+      }
+    }
+  }
+  }
+    return result;
 }
+
 
 
 float Calculate_Photo_Error(void)
@@ -548,13 +563,13 @@ void Turn_control(void)
       {  
         direction_pid.kp = Lose_line_KP;
         direction_pid.kd = lose_line_KD;
-        photo_error = Error_record; // 保持前一段路程的最大误差
+        photo_error = Error_record; // 根据实际情况保持前一段路程的误差
         detect_flags = 0; // 直角弯检测次数重置
         if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
       }
       else // 一般情况
       {
-        if((fabs(photo_error) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
+        if((fabs(photo_error) < PHOTO_ERROR_LIMIT) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
         {
           if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; 
         }
