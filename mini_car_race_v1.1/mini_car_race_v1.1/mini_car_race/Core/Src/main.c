@@ -179,7 +179,7 @@ float FindMax_WeightedValue(float weighted_value, volatile float dierroff_buffer
   float MAX = dierroff_buffer_photo_error[0];
   for (int8_t i = 0; i < FILTER_SIZE_ERROR; i++)
   {
-    if (fabs(dierroff_buffer_photo_error[i]) > fabs(MAX))
+    if (fabs(dierroff_buffer_photo_error[i]) < fabs(MAX))
     {
       MAX = dierroff_buffer_photo_error[i];
     }
