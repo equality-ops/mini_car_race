@@ -79,7 +79,7 @@ typedef struct PIDcontrol
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define DETECT_TIMES 4           // 直角转弯的检测次数
+#define DETECT_TIMES 3           // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 100     // 恢复模式计数器阈值
@@ -94,7 +94,7 @@ typedef struct PIDcontrol
 #define RESTORE_NORMAL_MODE 3      // 进入恢复模式标志
 
 #define STRAIGHT_LINE 0            // 直线情况
-#define TURN_LINE    0            // 转弯情况
+#define TURN_LINE     1            // 转弯情况
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -219,8 +219,10 @@ float Find_WeightedValue(float weighted_value, volatile float dierroff_buffer_ph
       }
     }
   }
+
+  return result;
   }
-    return result;
+
 }
 
 
