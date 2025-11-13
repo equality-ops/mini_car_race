@@ -54,7 +54,7 @@ typedef struct PIDcontrol
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 100     // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 50        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
@@ -81,10 +81,10 @@ typedef struct PIDcontrol
 
 #define DETECT_TIMES 4           // 直角转弯的检测次数
 #define DOTTED_LINE_RECORD_TIMES 5 // 进入虚线模式记录次数阈值
-#define CONTINUOUS_RIGHT_ANGLE_RECORD_TIMES 13 // 进入连续直角转弯模式记录次数阈值
+#define CONTINUOUS_RIGHT_ANGLE_RECORD_TIMES 12 // 进入连续直角转弯模式记录次数阈值
 
 #define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
-#define RESTORE_NORMAL_COUNT 200     // 恢复模式计数器阈值
+#define RESTORE_NORMAL_COUNT 100     // 恢复模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
@@ -104,6 +104,9 @@ typedef struct PIDcontrol
 
 #define LOSE_LINE_TRUE 1        // 上一帧处于丢线状态标志
 #define LOSE_LINE_FALSE 0       // 上一帧不处于丢线状态标志
+
+#define RIGHT_ANGLE_TRUE 1
+#define RIGHT_ANGLE_FALSE 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -142,7 +145,8 @@ volatile static float buf[100];  // UART发送缓冲区
 
 volatile static float Error_MAX = 0.0f; // 光电管误差最大值
 
-volatile static float record_error = 0.0f;    // 直角转弯时光电管误差记录
+volatile static float record_error = 0.0f;      // 直角转弯时光电管误差记录
+volatile static float record_Error_MAX = 0.0f;  // 光电管最大误差计算函数
 
 volatile static int8_t detect_flags = 0;  // 直角弯检测次数
 volatile static int8_t dotted_line_record_times = -1; // 虚线模式记录次数
@@ -167,6 +171,8 @@ volatile static int8_t if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;   // �
 volatile static int8_t if_dotted_line_mode = OFF_DOTTED_LINE;              // 是否处于虚线模式标志
 volatile static int8_t if_lose_line_last_time = LOSE_LINE_FALSE;                  // 上一次是否处于丢线状态标志 
 volatile static int8_t if_continuous_right_angle_turn_mode = EXIT_CONTINUES_RIGHT_ANGLE_MODE; // 是否处于连续直角转弯模式标志
+volatile static int32_t if_first_lose_line_picture = 0;  // 是否为丢线后的第一帧
+volatile static int8_t if_right_angle = RIGHT_ANGLE_FALSE;  // 是否为直角弯 
 
 PID speed_pid_left, speed_pid_right;                     // 速度环PID声明
 PID direction_pid;                                       // 转向环PID声明
@@ -428,8 +434,8 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.13f;
-  direction_pid.kp2 = 0.0002f;
+  direction_pid.kp = 0.15f;
+  direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.1f;
@@ -460,6 +466,7 @@ float Right_angle_mode(void) // 直角转弯模式函数
 {
   direction_pid.kp = RIGHT_ANGLE_TURN_KP;
   direction_pid.kd = RIGHT_ANGLE_TURN_KD;
+  direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
   right_angle_turn_count++;
   return record_error; // 返回已经记录的误差
 }
@@ -508,43 +515,73 @@ float Restore_mode(float photo_error) // 恢复模式函数
   }
   restore_count++;
   
-  if(if_continuous_right_angle_turn_mode == READY_CONTINUES_RIGHT_ANGLE_MODE){
-    if_right_angle_turn_mode = CONTINUOUS_RIGHT_ANGLE_MODE;
-  }
+  // if(if_continuous_right_angle_turn_mode == READY_CONTINUES_RIGHT_ANGLE_MODE){
+  //   //if_right_angle_turn_mode = CONTINUOUS_RIGHT_ANGLE_MODE;
+  //   if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE; // 调试代码，记得删去
+  // }
 
   return photo_error;
 }
 
 float Loseline_mode(void) // 丢线模式函数
 {
-  direction_pid.kp = Lose_line_KP;
-  direction_pid.kd = lose_line_KD;
   detect_flags = 0; // 直角弯检测次数重置
   if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
   if_lose_line_last_time = LOSE_LINE_TRUE; // 记录当前为丢线状态
   if(if_dotted_line_mode == ON_DOTTED_LINE)
   {
+    direction_pid.kp = record_kp;
+    direction_pid.kd = record_kd;
     return 0.0f;
   }
   else
   {
-    return Error_MAX; // 保持前一段路程的最大误差
+    direction_pid.kp = Lose_line_KP;
+    direction_pid.kd = lose_line_KD;
+    direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
+    if_first_lose_line_picture++;
+    if(if_first_lose_line_picture == 1)
+    {
+      if(Error_MAX > 119.0f)
+      {
+        record_Error_MAX = PHOTO_ERROR_MAX;
+        if_right_angle = RIGHT_ANGLE_TRUE;
+      }
+      else if(Error_MAX < -119.0f)
+      {
+        record_Error_MAX = PHOTO_ERROR_MIN;
+        if_right_angle = RIGHT_ANGLE_TRUE;
+      }
+    }
+
+    if(if_right_angle == RIGHT_ANGLE_TRUE)
+    {
+      return record_Error_MAX;
+    }
+    else if(if_right_angle == RIGHT_ANGLE_FALSE)
+    {
+      return Error_MAX;
+    }
   }
 }
 
 float Normal_mode(float photo_error) // 一般模式函数
 {
-  if((fabs(photo_error) * (*valid_count_address) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
+  if((fabs(photo_error) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5)) // 准备进入直角转弯模式
   {
-    if(if_lose_line_last_time == LOSE_LINE_TRUE) // 上一帧为丢线状态
-    {
-      if_dotted_line_mode = ON_DOTTED_LINE; // 进入虚线模式
-    }
     if_right_angle_turn_mode = READY_RIGHT_ANGLE_MODE; 
   }
   else // 退出准备进入直角转弯模式
   {
     if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;
+  }
+  
+  if((fabs(photo_error) * (*valid_count_address) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 1 || *valid_count_address == 2 || *valid_count_address == 3|| *valid_count_address == 4)) // 判断是否进入虚线模式
+  {
+    if(if_lose_line_last_time == LOSE_LINE_TRUE) // 上一帧为丢线状态
+    {
+      if_dotted_line_mode = ON_DOTTED_LINE; // 进入虚线模式
+    }
   }
 
   if(if_dotted_line_mode == ON_DOTTED_LINE) // 虚线模式处理
@@ -557,12 +594,13 @@ float Normal_mode(float photo_error) // 一般模式函数
     {
       dotted_line_record_times = -1;
       if_dotted_line_mode = OFF_DOTTED_LINE; // 退出虚线模式
-      if_continuous_right_angle_turn_mode = READY_CONTINUES_RIGHT_ANGLE_MODE; // 准备进入连续直角转弯模式
+      //if_continuous_right_angle_turn_mode = READY_CONTINUES_RIGHT_ANGLE_MODE; // 准备进入连续直角转弯模式
     }
-    photo_error = 0.0f;
   }
   
+  if_first_lose_line_picture = 0;
   if_lose_line_last_time = LOSE_LINE_FALSE;
+  if_right_angle = RIGHT_ANGLE_FALSE;
   detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
   direction_pid.kp = record_kp;  
   direction_pid.kd = record_kd;
@@ -573,15 +611,22 @@ float Continuous_right_angle_mode(float photo_error) // 连续直角转弯模式
 {
   if(photo_error == 9999){
     if_lose_line_last_time = LOSE_LINE_TRUE; // 记录当前为丢线状态
-    if(Error_MAX > 0){
-      photo_error = PHOTO_ERROR_MAX;
-    }
-    else{
-      photo_error = PHOTO_ERROR_MIN;
+    if_first_lose_line_picture++;
+    if(if_first_lose_line_picture == 1)
+    {
+      if(Error_MAX > 0)
+      {
+        record_Error_MAX = PHOTO_ERROR_MAX;
+      }
+      else
+      {
+        record_Error_MAX = PHOTO_ERROR_MIN;
+      }
     }
     direction_pid.kp = RIGHT_ANGLE_TURN_KP;
     direction_pid.kd = RIGHT_ANGLE_TURN_KD;
     direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
+    photo_error = record_Error_MAX;
   }
   else
   {
@@ -599,6 +644,7 @@ float Continuous_right_angle_mode(float photo_error) // 连续直角转弯模式
     direction_pid.kd = record_kd;
     direction_pid.GKD = record_gkd;
     if_lose_line_last_time = LOSE_LINE_FALSE; // 记录当前不为丢线状态
+    if_first_lose_line_picture = 0; // 重置丢线后第一帧的判断
   }
   return photo_error;
 }
@@ -612,11 +658,11 @@ void Turn_control(void) // 转向环控制
     
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, diff_buffer_photo_error); // 更新光电管误差最大值
     
-    if(if_right_angle_turn_mode == CONTINUOUS_RIGHT_ANGLE_MODE)
-    {
-      photo_error = Continuous_right_angle_mode(photo_error);
-    }
-    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE)
+    // if(if_right_angle_turn_mode == CONTINUOUS_RIGHT_ANGLE_MODE)
+    // {
+    //   photo_error = Continuous_right_angle_mode(photo_error);
+    // }
+    if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE)
     {
       photo_error = Restore_mode(photo_error);
     }
