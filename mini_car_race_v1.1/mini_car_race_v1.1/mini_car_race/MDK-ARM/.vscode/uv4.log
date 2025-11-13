@@ -1,8 +1,20 @@
 *** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
 Build target 'micro_smartcar'
+../Core/Src/main.c(585): warning: using the result of an assignment as a condition without parentheses [-Wparentheses]
+    if(if_lose_line_last_time = LOSE_LINE_TRUE) // 上一帧为丢线状态
+       ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+../Core/Src/main.c(585): note: place parentheses around the assignment to silence this warning
+    if(if_lose_line_last_time = LOSE_LINE_TRUE) // 上一帧为丢线状态
+                              ^
+       (                                      )
+../Core/Src/main.c(585): note: use '==' to turn this assignment into an equality comparison
+    if(if_lose_line_last_time = LOSE_LINE_TRUE) // 上一帧为丢线状态
+                              ^
+                              ==
+1 warning generated.
 compiling main.c...
 linking...
-Program Size: Code=25842 RO-data=8582 RW-data=40 ZI-data=10720  
+Program Size: Code=26170 RO-data=8582 RW-data=44 ZI-data=10724  
 FromELF: creating hex file...
-"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 0 Warning(s).
-Build Time Elapsed:  00:00:00
+"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 1 Warning(s).
+Build Time Elapsed:  00:00:08
