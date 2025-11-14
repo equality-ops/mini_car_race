@@ -3,7 +3,7 @@
 <title>Static Call Graph - [micro_smartcar\micro_smartcar.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image micro_smartcar\micro_smartcar.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Fri Nov 14 01:52:50 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Sat Nov 15 00:12:14 2025
 <BR><P>
 <H3>Maximum Stack Usage =        744 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -949,7 +949,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[93]"></a>Normal_mode</STRONG> (Thumb, 226 bytes, Stack size 32 bytes, main.o(.text.Normal_mode))
+<P><STRONG><a name="[93]"></a>Normal_mode</STRONG> (Thumb, 232 bytes, Stack size 32 bytes, main.o(.text.Normal_mode))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = Normal_mode &rArr; __aeabi_dmul &rArr; _double_epilogue &rArr; _double_round
 </UL>
 <BR>[Calls]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dcmpge
@@ -1017,14 +1017,14 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[85]"></a>Turn_control</STRONG> (Thumb, 592 bytes, Stack size 24 bytes, main.o(.text.Turn_control))
+<P><STRONG><a name="[85]"></a>Turn_control</STRONG> (Thumb, 600 bytes, Stack size 24 bytes, main.o(.text.Turn_control))
 <BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = Turn_control &rArr; Normal_mode &rArr; __aeabi_dmul &rArr; _double_epilogue &rArr; _double_round
 </UL>
-<BR>[Calls]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dcmpge
+<BR>[Calls]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Normal_mode
+<LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dcmpge
 <LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
 <LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2d
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
-<LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Normal_mode
 <LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmplt
 <LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmpge
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
