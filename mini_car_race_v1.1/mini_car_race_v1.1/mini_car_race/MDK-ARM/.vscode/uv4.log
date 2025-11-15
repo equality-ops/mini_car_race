@@ -1,23 +1,2 @@
-*** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
-Build target 'micro_smartcar'
-../Core/Src/main.c(561): warning: non-void function does not return a value in all control paths [-Wreturn-type]
-}
-^
-../Core/Src/main.c(664): warning: using the result of an assignment as a condition without parentheses [-Wparentheses]
-    if(if_lose_line_last_time = LOSE_LINE_TRUE) // 上一帧为丢线状态
-       ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
-../Core/Src/main.c(664): note: place parentheses around the assignment to silence this warning
-    if(if_lose_line_last_time = LOSE_LINE_TRUE) // 上一帧为丢线状态
-                              ^
-       (                                      )
-../Core/Src/main.c(664): note: use '==' to turn this assignment into an equality comparison
-    if(if_lose_line_last_time = LOSE_LINE_TRUE) // 上一帧为丢线状态
-                              ^
-                              ==
-2 warnings generated.
-compiling main.c...
-linking...
-Program Size: Code=26546 RO-data=8582 RW-data=44 ZI-data=10412  
-FromELF: creating hex file...
-"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 2 Warning(s).
-Build Time Elapsed:  00:00:09
+Load "micro_smartcar\\micro_smartcar.axf" 
+Erase Done.Programming Done.Verify OK.Flash Load finished at 23:51:06
