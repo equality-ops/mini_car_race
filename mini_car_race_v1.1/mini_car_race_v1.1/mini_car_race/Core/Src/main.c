@@ -55,7 +55,7 @@ typedef struct PIDcontrol
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 70        // 高速基准速度
+#define HIGH_BASE_SPEED 63        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
@@ -74,12 +74,12 @@ typedef struct PIDcontrol
 #define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f // 直角转弯时的kd值
 #define RIGHT_ANGLE_TURN_GKD -0.4f // 直角转弯时的GKD值
-#define Lose_line_KP 0.15f         // 丢线时的kp值
-#define lose_line_KD 0.06f        // 丢线时的kd值
+#define Lose_line_KP 0.18f         // 丢线时的kp值
+#define lose_line_KD 0.08f        // 丢线时的kd值
 #define RESTORE_KP 0.1f           // 恢复模式的kp值
 #define RESTORE_KD 0.03f          // 恢复模式的kd值
 
-#define RIGHT_ANGLE_DETECT_TIMES 7        // 直角转弯的检测次数
+#define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 250     // 恢复模式计数器阈值
@@ -414,7 +414,7 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.15f;
+  direction_pid.kp = 0.16f;
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
@@ -518,8 +518,8 @@ float Loseline_mode(void) // 丢线模式函数
   }
   else if(fabs(Error_MAX) < 201.0f)
   {
-    direction_pid.kp = Lose_line_KP;
-    direction_pid.kd = lose_line_KD;
+    direction_pid.kp = record_kp;
+    direction_pid.kd = record_kd;
     direction_pid.GKD = record_gkd;
     return 0.0f;
   }
