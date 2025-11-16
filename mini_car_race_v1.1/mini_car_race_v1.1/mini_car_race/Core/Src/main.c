@@ -47,6 +47,12 @@ typedef struct PIDcontrol
   float output;
 }PID;
 
+typedef struct DisperseControl
+{
+  int8_t circulation_record;  // 循环计数器
+  int8_t disperse_count;      // 光电管返回值离散区域数量
+  int8_t flags;               // 检测标志
+}IF_DISPERSE;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -71,18 +77,21 @@ typedef struct PIDcontrol
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.25f // 直角转弯时的kp值
-#define RIGHT_ANGLE_TURN_KD 0.08f // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.4f // 直角转弯时的GKD值
-#define Lose_line_KP 0.18f         // 丢线时的kp值
-#define lose_line_KD 0.08f        // 丢线时的kd值
-#define RESTORE_KP 0.1f           // 恢复模式的kp值
-#define RESTORE_KD 0.03f          // 恢复模式的kd值
+#define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
+#define RIGHT_ANGLE_TURN_GKD -0.4f  // 直角转弯时的GKD值
+#define LOSE_lINE_KP 0.18f          // 丢线时的kp值
+#define lOSE_lINE_KD 0.08f          // 丢线时的kd值
+#define LOSE_LINE_GKD -0.5f         // 丢线时的gkd值
+#define RESTORE_KP 0.1f             // 恢复模式的kp值
+#define RESTORE_KD 0.03f            // 恢复模式的kd值
 
 #define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
+#define ROUNDABOUT_DETECT_TIMES 4         // 环岛的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 250     // 恢复模式计数器阈值
+#define ROUNDABOUT_COUNT 300         // 环岛模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
@@ -92,6 +101,7 @@ typedef struct PIDcontrol
 #define EXIT_RIGHT_ANGLE_MODE 0       // 退出直角转弯模式标志
 #define READY_RIGHT_ANGLE_MODE 2      // 准备进入直角转弯模式标志
 #define RESTORE_NORMAL_MODE 3         // 进入恢复模式标志
+#define ROUNDABOUT_MODE 4             // 环岛模式标志
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -131,7 +141,8 @@ volatile static float Error_MAX = 0.0f; // 光电管误差最大值
 volatile static float record_error = 0.0f;      // 直角转弯时光电管误差记录
 volatile static float record_Error_MAX = 0.0f;  // 光电管最大误差计算函数
 
-volatile static int8_t detect_flags = 0;  // 直角弯检测次数
+volatile static int8_t right_angle_detect_flags = 0;  // 直角弯检测次数
+volatile static int8_t roundabout_detect_flags = 0;   // 环岛检测次数
 volatile static int8_t right_angle_turn_record_times = 0; // 直角转弯模式记录次数
 
 volatile uint8_t valid_count = 0;                     // 光电管亮起数量
@@ -140,10 +151,11 @@ volatile uint8_t *valid_count_address = &valid_count; // 光电管亮起数量�
 volatile int16_t Left_actual = 0, Right_actual = 0, Direction_actual = 0; // 左右电机实际速度,和转向环实际位置
 volatile int16_t Left_pwm = 0, Right_pwm = 0;                             // 左右电机输出的pwm
 
-volatile static uint32_t count = 0;            // 时间计数器
-volatile static uint32_t right_angle_turn_count = 0;       // 直角转弯计数器
-volatile static uint32_t restore_count = 0;    // 恢复计数器 
-volatile static float weighted_sum_record = 0; // 上一次光电管误差记录
+volatile static uint32_t count = 0;             // 时间计数器
+volatile static uint32_t right_angle_turn_count = 0;      // 直角转弯计数器
+volatile static uint32_t restore_count = 0;     // 恢复计数器 
+volatile static uint32_t roundabout_count = 0;  // 环岛计数器
+volatile static float weighted_sum_record = 0;  // 上一次光电管误差记录
 
 volatile static float record_kp = 0.0f;                  // 用于记录转向环kp值
 volatile static float record_kd = 0.0f;                  // 用于记录转向环kd值
@@ -151,8 +163,9 @@ volatile static float record_gkd = 0.0f;                 // 用于记录转向�
 
 volatile static int8_t if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;   // 是否处于直角转弯模式标志
 
-PID speed_pid_left, speed_pid_right;                     // 速度环PID声明
-PID direction_pid;                                       // 转向环PID声明
+PID speed_pid_left, speed_pid_right;                     // 速度环PID定义
+PID direction_pid;                                       // 转向环PID定义
+IF_DISPERSE if_disperse = {0,0,0};
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
 /* USER CODE END PV */
 
@@ -190,21 +203,61 @@ float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, 
   return MAX;
 }
 
+int8_t If_disperse(uint8_t photo_value, struct DisperseControl* if_disperse) // 判断光电管读数是否离散函数
+{
+  if_disperse->circulation_record = (if_disperse->circulation_record + 1) % PHOTO_NUM;
+  if(photo_value)
+  {
+    switch (if_disperse->flags)
+    {
+      case 0:
+      if_disperse->flags = 1;
+      if_disperse->disperse_count++;
+      break;
+      case 1:
+      break;
+    }
+  }
+  else
+  {
+    if_disperse->flags = 0;
+  }
+
+  if(if_disperse->circulation_record == 0)
+  {
+    uint8_t temp = if_disperse->disperse_count;
+    if_disperse->disperse_count = 0;
+    if_disperse->flags = 0;
+    return temp;
+  }
+  else
+  {
+    return -1;
+  }
+}
+
 float Calculate_Photo_Error(void)
 { // 光电管误差计算函数
   valid_count = 0;
   int16_t weighted_sum = 0;
   uint16_t photo_value = 0;
+  uint8_t photo_value_record = 0;
 
   MUX_get_value(&photo_value);// 获取每个通道的返回值
 
   for (int i = 0; i < PHOTO_NUM; i++)
   {
-    if ((photo_value >> (PHOTO_NUM - i - 1)) & 1)
+    photo_value_record = (photo_value >> (PHOTO_NUM - i - 1)) & 1;
+    if (photo_value_record)
     {                                                
       weighted_sum += (2 * i - PHOTO_NUM + 1) * 40; // 计算加权和
       valid_count++;
     }
+  }
+  
+  if(If_disperse(photo_value_record, &if_disperse) >= 2) // 判断光电管读数是否离散
+  {
+    roundabout_detect_flags++;
   }
 
   if (valid_count == 0)
@@ -372,7 +425,7 @@ void Compute_target(int8_t motor)
     {
       speed_pid_left.target = TURN_BASE_SPEED + (HIGH_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
     }
-    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && detect_flags >= 1 )
+    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1 )
     {
       speed_pid_left.target = READY_TURN_BASE_SPEED - direction_pid.output;
     }
@@ -391,7 +444,7 @@ void Compute_target(int8_t motor)
     {
       speed_pid_right.target = TURN_BASE_SPEED + (HIGH_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
     }
-    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && detect_flags >= 1 )
+    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1 )
     {
       speed_pid_left.target = READY_TURN_BASE_SPEED + direction_pid.output;
     }
@@ -443,7 +496,7 @@ float Right_angle_mode(void) // 直角转弯模式函数
 
 float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模式函数
 {
-  if(detect_flags >= RIGHT_ANGLE_DETECT_TIMES - 1) // 判断是否连续多次满足进入直角转弯模式条件
+  if(right_angle_detect_flags >= RIGHT_ANGLE_DETECT_TIMES - 1) // 判断是否连续多次满足进入直角转弯模式条件
   {
     if_right_angle_turn_mode = START_RIGHT_ANGLE_MODE;
     direction_pid.kp = RIGHT_ANGLE_TURN_KP; // 切换为直角转弯时的kp和kd值
@@ -451,7 +504,7 @@ float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模�
     direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
     return record_error;
   }
-  else if(detect_flags == 0)
+  else if(right_angle_detect_flags == 0)
   {
     if(photo_error > 0)
     {
@@ -467,7 +520,7 @@ float Ready_right_angle_mode(float photo_error) // 准备进行直角转弯模�
     }
   } 
 
-  detect_flags++; // 完成一次对直角弯标志的判断
+  right_angle_detect_flags++; // 完成一次对直角弯标志的判断
   return photo_error;
 }
 
@@ -479,23 +532,20 @@ float Restore_mode(float photo_error) // 恢复模式函数
   {
     photo_error = record_error;
   }
-  else
-  {
-    photo_error = weighted_sum_record;
-  }
   restore_count++;
   return photo_error;
 }
 
 float Loseline_mode(void) // 丢线模式函数
 {
-  detect_flags = 0; // 直角弯检测次数重置
+  right_angle_detect_flags = 0; // 直角弯检测次数重置
+  roundabout_detect_flags = 0;   // 环岛检测次数重置
   if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
   if(fabs(Error_MAX) > 1079.0f) // 判断是否达到直角转弯条件
   {
     direction_pid.kp = RIGHT_ANGLE_TURN_KP;
     direction_pid.kd = RIGHT_ANGLE_TURN_KD;
-    direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
+    direction_pid.GKD = LOSE_LINE_GKD;
     if(Error_MAX > 1079.0f)
     {
       record_Error_MAX = PHOTO_ERROR_MAX;
@@ -515,8 +565,8 @@ float Loseline_mode(void) // 丢线模式函数
   }
   else
   {
-    direction_pid.kp = Lose_line_KP;
-    direction_pid.kd = lose_line_KD;
+    direction_pid.kp = LOSE_lINE_KP;
+    direction_pid.kd = lOSE_lINE_KD;
     direction_pid.GKD = record_gkd;
     return Error_MAX;
   }
@@ -533,6 +583,18 @@ int8_t If_ready_right_angle_turn(float photo_error) // 判断是否准备进入�
   else
   {
     return 0; // 不准备进入直角转弯模式
+  }
+}
+
+int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
+{
+  if(roundabout_detect_flags >= ROUNDABOUT_DETECT_TIMES || if_right_angle_turn_mode == ROUNDABOUT_MODE)
+  {
+    return 1; // 处于环岛模式
+  }
+  else
+  {
+    return 0; // 不处于环岛模式
   }
 }
 
@@ -559,10 +621,34 @@ float Normal_mode(float photo_error) // 一般模式函数
     if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;
   }
   
-  detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
+  roundabout_detect_flags = 0;   // 环岛检测次数重置
+  right_angle_detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
   direction_pid.kp = record_kp;  
   direction_pid.kd = record_kd;
   return photo_error;
+}
+
+float Roundabout_mode(void) // 环岛模式函数
+{
+  direction_pid.kp = record_kp;
+  direction_pid.kd = record_kd;
+  direction_pid.GKD = record_gkd;
+  roundabout_count++;
+  right_angle_detect_flags = 0; // 重置直角转弯检测次数
+
+  if(if_right_angle_turn_mode != ROUNDABOUT_MODE)
+  {
+    if_right_angle_turn_mode = ROUNDABOUT_MODE;
+  }
+ 
+  if(roundabout_count <= 150)
+  {
+    return 0.0f;
+  }
+  else
+  {
+    return -500.0f;
+  }
 }
 
 void Turn_control(void) // 转向环控制
@@ -595,6 +681,10 @@ void Turn_control(void) // 转向环控制
             direction_pid.kd = record_kd;
           }
       }
+      else if(If_on_roundabout()) // 环岛情况
+      {
+        photo_error = Roundabout_mode();
+      }
       else if(photo_error == 9999) // 丢线情况
       {  
         photo_error = Loseline_mode();
@@ -608,7 +698,7 @@ void Turn_control(void) // 转向环控制
     if(right_angle_turn_count >= RIGHT_ANGLE_TURN_COUNT) // 退出直角转弯模式并进入恢复模式
     {
       if_right_angle_turn_mode = RESTORE_NORMAL_MODE; 
-      detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
+      right_angle_detect_flags = 0;  // 直角弯检测次数重置，防止上次使用时未置0的检测次数影响到下一次直角弯的连续帧判断
       right_angle_turn_count = 0; // 直角转弯计数器重置
     } 
   
@@ -619,7 +709,13 @@ void Turn_control(void) // 转向环控制
       record_error = 0.0f; // 直角弯误差记录重置
       restore_count = 0; // 恢复计数器重置
     }
-
+    
+    if(roundabout_count >= ROUNDABOUT_COUNT)
+    {
+      if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;
+      roundabout_count = 0; // 环岛计数器重置
+      roundabout_detect_flags = 0; // 环岛检测次数重置
+    }
     Direction_actual = photo_error;
     ComeputePID_Position(&direction_pid, Direction_actual, TURN);
   }
