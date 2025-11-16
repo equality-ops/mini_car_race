@@ -60,8 +60,8 @@ typedef struct DisperseControl
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 63        // 高速基准速度
-#define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
+#define HIGH_BASE_SPEED 70        // 高速基准速度
+#define READY_TURN_BASE_SPEED 30  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
@@ -79,10 +79,10 @@ typedef struct DisperseControl
 
 #define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.6f  // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.8f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.18f          // 丢线时的kp值
 #define lOSE_lINE_KD 0.08f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.3f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.4f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -91,7 +91,7 @@ typedef struct DisperseControl
 
 #define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 400     // 恢复模式计数器阈值
-#define ROUNDABOUT_COUNT 175         // 环岛模式计数器阈值
+#define ROUNDABOUT_COUNT 150        // 环岛模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
