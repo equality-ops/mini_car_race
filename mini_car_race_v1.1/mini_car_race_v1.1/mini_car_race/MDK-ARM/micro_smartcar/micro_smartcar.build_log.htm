@@ -37,7 +37,7 @@ float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, 
     if (fabs(dierroff_buffer_photo_error[i]) > fabs(MAX))
         ^~~~
         abs
-../Core/Src/main.c(584): warning: incompatible pointer types passing 'volatile float[20]' to parameter of type 'volatile int *' [-Wincompatible-pointer-types]
+../Core/Src/main.c(574): warning: incompatible pointer types passing 'volatile float[20]' to parameter of type 'volatile int *' [-Wincompatible-pointer-types]
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, valid_count ,diff_buffer_photo_error); // 更新光电管误差最大值
                                                                         ^~~~~~~~~~~~~~~~~~~~~~~
 ../Core/Src/main.c(173): note: passing argument to parameter 'dierroff_buffer_photo_error' here
@@ -72,7 +72,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:00
 </pre>
 </body>
 </html>
