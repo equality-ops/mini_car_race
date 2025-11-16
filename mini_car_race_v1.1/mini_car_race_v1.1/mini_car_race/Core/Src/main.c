@@ -76,12 +76,12 @@ typedef struct DisperseControl
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KP 0.22f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.6f  // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.53f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.18f          // 丢线时的kp值
 #define lOSE_lINE_KD 0.08f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.3f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.4f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -561,7 +561,7 @@ float Loseline_mode(void) // 丢线模式函数
   {
     direction_pid.kp = LOSE_lINE_KP;
     direction_pid.kd = lOSE_lINE_KD;
-    direction_pid.GKD = record_gkd;
+    direction_pid.GKD = LOSE_LINE_GKD;
     return Error_MAX;
   }
 }
@@ -594,7 +594,7 @@ int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
 
 int8_t If_on_right_angle_turn(float photo_error) // 判断是否处于直角转弯模式函数
 {
-  if((*valid_count_address >= 7 && *valid_count_address <= 9 && (fabs(photo_error) * (*valid_count_address) >= 1079.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
+  if((*valid_count_address >= 7 && *valid_count_address <= 10 && (fabs(photo_error) * (*valid_count_address) >= 1079.0f)) || if_right_angle_turn_mode == START_RIGHT_ANGLE_MODE)
   {
     return 1; // 处于直角转弯模式
   }
