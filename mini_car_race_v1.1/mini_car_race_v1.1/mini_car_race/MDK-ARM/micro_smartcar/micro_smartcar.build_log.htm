@@ -27,26 +27,26 @@ Project File Date:  11/13/2025
 <h2>Output:</h2>
 *** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
 Build target 'micro_smartcar'
-../Core/Src/main.c(185): warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
+../Core/Src/main.c(186): warning: type specifier missing, defaults to 'int' [-Wimplicit-int]
 float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, volatile dierroff_buffer_photo_error[])
                                                                                 ~~~~~~~~ ^
-../Core/Src/main.c(197): warning: using floating point absolute value function 'fabs' when argument is of integer type [-Wabsolute-value]
+../Core/Src/main.c(198): warning: using floating point absolute value function 'fabs' when argument is of integer type [-Wabsolute-value]
     if (fabs(dierroff_buffer_photo_error[i]) > fabs(MAX))
         ^
-../Core/Src/main.c(197): note: use function 'abs' instead
+../Core/Src/main.c(198): note: use function 'abs' instead
     if (fabs(dierroff_buffer_photo_error[i]) > fabs(MAX))
         ^~~~
         abs
-../Core/Src/main.c(654): warning: incompatible pointer types passing 'volatile float[20]' to parameter of type 'volatile int *' [-Wincompatible-pointer-types]
+../Core/Src/main.c(668): warning: incompatible pointer types passing 'volatile float[20]' to parameter of type 'volatile int *' [-Wincompatible-pointer-types]
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, valid_count ,diff_buffer_photo_error); // 更新光电管误差最大值
                                                                         ^~~~~~~~~~~~~~~~~~~~~~~
-../Core/Src/main.c(185): note: passing argument to parameter 'dierroff_buffer_photo_error' here
+../Core/Src/main.c(186): note: passing argument to parameter 'dierroff_buffer_photo_error' here
 float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, volatile dierroff_buffer_photo_error[])
                                                                                          ^
 3 warnings generated.
 compiling main.c...
 linking...
-Program Size: Code=26314 RO-data=8582 RW-data=40 ZI-data=10408  
+Program Size: Code=26306 RO-data=8582 RW-data=40 ZI-data=10408  
 FromELF: creating hex file...
 "micro_smartcar\micro_smartcar.axf" - 0 Error(s), 3 Warning(s).
 
