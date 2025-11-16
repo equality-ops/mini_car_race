@@ -215,16 +215,6 @@ float Calculate_Photo_Error(void)
   return weighted_sum_record;                              // 返回光电管误差
 }
 
-void Collect_photo_error(void)
-{  // 光电管误差采集函数
-  if(count % 1 == 0){
-    volatile float photo_error = Calculate_Photo_Error();
-    if(photo_error == 9999||(*valid_count_address >=7 && *valid_count_address <=9)){
-        count = 50; // 此时强制开启转换环的直角转弯模式
-    } 
-    }
-}
-
 // 参数说明：nowError 当前误差，preError 上次误差，kd 微分系数，diff_buffer 滤波缓冲区
 float filtered_derivative(int32_t nowError, int32_t preError, float kd,volatile float diff_buffer[], int8_t mode)
 { // 微分缓冲滤波函数
