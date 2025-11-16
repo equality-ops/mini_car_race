@@ -72,7 +72,8 @@ typedef struct DisperseControl
 #define TURN_OUTPUTMIN -3000     // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
-#define PHOTO_ERROR_LIMIt 370.0f // 判断直角弯的光电管误差阈值
+#define DOTTED_LINE_PHOTO_ERROR_LIMIt 371.0f  // 判断虚线的光电管误差阈值
+#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1079.0f // 判断直角弯的光电管误差阈值
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
@@ -535,22 +536,22 @@ float Loseline_mode(void) // 丢线模式函数
   right_angle_detect_flags = 0; // 直角弯检测次数重置
   roundabout_detect_flags = 0;   // 环岛检测次数重置
   if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE; // 退出直角转弯模式
-  if(fabs(Error_MAX) > 1079.0f) // 判断是否达到直角转弯条件
+  if(fabs(Error_MAX) > RIGHT_ANGLE_PHOTO_ERROR_LIMIT) // 判断是否达到直角转弯条件
   {
     direction_pid.kp = RIGHT_ANGLE_TURN_KP;
     direction_pid.kd = RIGHT_ANGLE_TURN_KD;
     direction_pid.GKD = LOSE_LINE_GKD;
-    if(Error_MAX > 1079.0f)
+    if(Error_MAX > 0.0f)
     {
       record_Error_MAX = PHOTO_ERROR_MAX;
     }
-    else if(Error_MAX < -1079.0f)
+    else if(Error_MAX < 0.0f)
     {
       record_Error_MAX = PHOTO_ERROR_MIN;
     }
     return record_Error_MAX;
   }
-  else if(fabs(Error_MAX) < 371.0f)
+  else if(fabs(Error_MAX) < DOTTED_LINE_PHOTO_ERROR_LIMIt)
   {
     direction_pid.kp = record_kp;
     direction_pid.kd = record_kd;
@@ -570,7 +571,7 @@ float Loseline_mode(void) // 丢线模式函数
 
 int8_t If_ready_right_angle_turn(float photo_error) // 判断是否准备进入直角转弯模式函数
 {
-  if((fabs(photo_error) < PHOTO_ERROR_LIMIt) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5 || *valid_count_address == 6))
+  if((fabs(photo_error) < RIGHT_ANGLE_PHOTO_ERROR_LIMIT) && (*valid_count_address == 3 || *valid_count_address == 4 || *valid_count_address == 5 || *valid_count_address == 6))
   {
     return 1; // 准备进入直角转弯模式
   }
