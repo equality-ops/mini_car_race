@@ -49,7 +49,6 @@ typedef struct PIDcontrol
 
 typedef struct DisperseControl
 {
-  int8_t circulation_record;  // 循环计数器
   int8_t disperse_count;      // 光电管返回值离散区域数量
   int8_t flags;               // 检测标志
 }IF_DISPERSE;
@@ -79,19 +78,19 @@ typedef struct DisperseControl
 
 #define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.4f  // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.6f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.18f          // 丢线时的kp值
 #define lOSE_lINE_KD 0.08f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.5f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.3f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
 #define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
-#define ROUNDABOUT_DETECT_TIMES 4         // 环岛的检测次数
+#define ROUNDABOUT_DETECT_TIMES 6         // 环岛的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
-#define RESTORE_NORMAL_COUNT 250     // 恢复模式计数器阈值
-#define ROUNDABOUT_COUNT 300         // 环岛模式计数器阈值
+#define RESTORE_NORMAL_COUNT 400     // 恢复模式计数器阈值
+#define ROUNDABOUT_COUNT 150         // 环岛模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
@@ -165,7 +164,7 @@ volatile static int8_t if_right_angle_turn_mode = EXIT_RIGHT_ANGLE_MODE;   // �
 
 PID speed_pid_left, speed_pid_right;                     // 速度环PID定义
 PID direction_pid;                                       // 转向环PID定义
-IF_DISPERSE if_disperse = {0,0,0};
+IF_DISPERSE if_disperse = {0,0};
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
 /* USER CODE END PV */
 
@@ -205,14 +204,14 @@ float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, 
 
 int8_t If_disperse(uint8_t photo_value, struct DisperseControl* if_disperse) // 判断光电管读数是否离散函数
 {
-  if_disperse->circulation_record = (if_disperse->circulation_record + 1) % PHOTO_NUM;
   if(photo_value)
   {
+    if_disperse->disperse_count = 0;
     switch (if_disperse->flags)
     {
       case 0:
       if_disperse->flags = 1;
-      if_disperse->disperse_count++;
+      if_disperse->disperse_count = 1;
       break;
       case 1:
       break;
@@ -223,17 +222,7 @@ int8_t If_disperse(uint8_t photo_value, struct DisperseControl* if_disperse) // 
     if_disperse->flags = 0;
   }
 
-  if(if_disperse->circulation_record == 0)
-  {
-    uint8_t temp = if_disperse->disperse_count;
-    if_disperse->disperse_count = 0;
-    if_disperse->flags = 0;
-    return temp;
-  }
-  else
-  {
-    return -1;
-  }
+  return if_disperse->disperse_count;
 }
 
 float Calculate_Photo_Error(void)
@@ -241,13 +230,14 @@ float Calculate_Photo_Error(void)
   valid_count = 0;
   int16_t weighted_sum = 0;
   uint16_t photo_value = 0;
-  uint8_t photo_value_record = 0;
+  uint8_t disperse_sum = 0;
 
   MUX_get_value(&photo_value);// 获取每个通道的返回值
 
   for (int i = 0; i < PHOTO_NUM; i++)
   {
-    photo_value_record = (photo_value >> (PHOTO_NUM - i - 1)) & 1;
+    uint8_t photo_value_record = (photo_value >> (PHOTO_NUM - i - 1)) & 1;
+    disperse_sum += If_disperse(photo_value_record, &if_disperse);
     if (photo_value_record)
     {                                                
       weighted_sum += (2 * i - PHOTO_NUM + 1) * 40; // 计算加权和
@@ -255,9 +245,13 @@ float Calculate_Photo_Error(void)
     }
   }
   
-  if(If_disperse(photo_value_record, &if_disperse) >= 2) // 判断光电管读数是否离散
+  if(disperse_sum == 2)
   {
     roundabout_detect_flags++;
+  }
+  else
+  {
+    roundabout_detect_flags = 0;
   }
 
   if (valid_count == 0)
@@ -421,13 +415,13 @@ void Compute_target(int8_t motor)
     {
       speed_pid_left.target = TURN_BASE_SPEED - direction_pid.output;
     }
-    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE) // 恢复模式下基准速度线性增长恢复到HIGH_BASE_SPEED
-    {
-      speed_pid_left.target = TURN_BASE_SPEED + (HIGH_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
-    }
-    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1 )
+    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1)
     {
       speed_pid_left.target = READY_TURN_BASE_SPEED - direction_pid.output;
+    }
+    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE)
+    {
+      speed_pid_left.target = TURN_BASE_SPEED + (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * (restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
     }
     else // 一般情况
     {
@@ -440,13 +434,13 @@ void Compute_target(int8_t motor)
     {
       speed_pid_right.target = TURN_BASE_SPEED + direction_pid.output;
     }
-    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE) // 恢复模式下基准速度线性增长恢复到HIGH_BASE_SPEED
+    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1)
     {
-      speed_pid_right.target = TURN_BASE_SPEED + (HIGH_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
+      speed_pid_right.target = READY_TURN_BASE_SPEED + direction_pid.output;
     }
-    else if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1 )
+    else if(if_right_angle_turn_mode == RESTORE_NORMAL_MODE)
     {
-      speed_pid_left.target = READY_TURN_BASE_SPEED + direction_pid.output;
+      speed_pid_right.target = TURN_BASE_SPEED + (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * (restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
     }
     else // 一般情况
     {
@@ -457,7 +451,7 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.16f;
+  direction_pid.kp = 0.15f;
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
@@ -556,7 +550,7 @@ float Loseline_mode(void) // 丢线模式函数
     }
     return record_Error_MAX;
   }
-  else if(fabs(Error_MAX) < 201.0f)
+  else if(fabs(Error_MAX) < 371.0f)
   {
     direction_pid.kp = record_kp;
     direction_pid.kd = record_kd;
@@ -641,7 +635,7 @@ float Roundabout_mode(void) // 环岛模式函数
     if_right_angle_turn_mode = ROUNDABOUT_MODE;
   }
  
-  if(roundabout_count <= 150)
+  if(roundabout_count <= 100)
   {
     return 0.0f;
   }
@@ -665,7 +659,11 @@ void Turn_control(void) // 转向环控制
     }
     else
     {
-      if(If_on_right_angle_turn(photo_error)) // 准备进入直角转弯模式
+      if(If_on_roundabout()) // 环岛情况
+      {
+        photo_error = Roundabout_mode();
+      }
+      else if(If_on_right_angle_turn(photo_error)) // 准备进入直角转弯模式
       { // 直角转弯情况
           if(if_right_angle_turn_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
           {
@@ -680,10 +678,6 @@ void Turn_control(void) // 转向环控制
             direction_pid.kp = record_kp;  
             direction_pid.kd = record_kd;
           }
-      }
-      else if(If_on_roundabout()) // 环岛情况
-      {
-        photo_error = Roundabout_mode();
       }
       else if(photo_error == 9999) // 丢线情况
       {  
