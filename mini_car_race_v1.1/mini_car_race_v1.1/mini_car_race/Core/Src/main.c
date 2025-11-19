@@ -60,7 +60,7 @@ typedef struct DisperseControl
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 63        // 高速基准速度
+#define HIGH_BASE_SPEED 50        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
@@ -85,7 +85,7 @@ typedef struct DisperseControl
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
-#define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
+#define RIGHT_ANGLE_DETECT_TIMES 5        // 直角转弯的检测次数
 #define ROUNDABOUT_DETECT_TIMES 6         // 环岛的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
@@ -452,7 +452,7 @@ void Compute_target(int8_t motor)
 void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.15f;
-  direction_pid.kp2 = 0.0003f;
+  direction_pid.kp2 = 0.0001f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.1f;
