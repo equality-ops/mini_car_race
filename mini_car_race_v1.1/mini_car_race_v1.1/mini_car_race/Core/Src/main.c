@@ -846,19 +846,19 @@ void Turn_control(void) // 转向环控制
       }
       else if(If_on_right_angle_turn(photo_error)) // 准备进入直角转弯模式
       { // 直角转弯情况
-          if(current_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
-          {
-            photo_error = Ready_right_angle_mode(photo_error);
-          }
-          else if(current_mode == START_RIGHT_ANGLE_MODE) // 保持直角转弯模式
-          {
-            photo_error = Right_angle_mode();
-          }
-          else if(current_mode == EXIT_RIGHT_ANGLE_MODE) // 一般情况
-          {
-            direction_pid.kp = record_kp;  
-            direction_pid.kd = record_kd;
-          }
+        if(current_mode == READY_RIGHT_ANGLE_MODE) // 进入直角转弯模式
+        {
+          photo_error = Ready_right_angle_mode(photo_error);
+        }
+        else if(current_mode == START_RIGHT_ANGLE_MODE) // 保持直角转弯模式
+        {
+          photo_error = Right_angle_mode();
+        }
+        else if(current_mode == EXIT_RIGHT_ANGLE_MODE) // 一般情况
+        {
+          direction_pid.kp = record_kp;  
+          direction_pid.kd = record_kd;
+        }
       }
       else if(current_mode == READY_DOTTED_LINE_MODE) // 准备通过虚线情况
       {
