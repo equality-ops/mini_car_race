@@ -1,2 +1,4 @@
-Load "micro_smartcar\\micro_smartcar.axf" 
-Erase Done.Programming Done.Verify OK.Flash Load finished at 22:19:19
+*** Using Compiler 'V6.18', folder: 'D:\ruanjian\keil\ARM\ARMCLANG\Bin'
+Build target 'micro_smartcar'
+"micro_smartcar\micro_smartcar.axf" - 0 Error(s), 0 Warning(s).
+Build Time Elapsed:  00:00:01
