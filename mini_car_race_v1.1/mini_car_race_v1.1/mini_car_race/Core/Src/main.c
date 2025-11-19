@@ -81,7 +81,7 @@ typedef struct DisperseControl
 #define RIGHT_ANGLE_TURN_GKD -0.3f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.18f          // 丢线时的kp值
 #define lOSE_lINE_KD 0.08f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.1f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
