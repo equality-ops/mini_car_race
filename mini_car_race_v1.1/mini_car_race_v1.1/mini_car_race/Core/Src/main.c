@@ -96,9 +96,9 @@ typedef struct {
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 70        // 高速基准速度
-#define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
-#define TURN_BASE_SPEED 20        // 直角转弯基准速度     
+#define HIGH_BASE_SPEED 80        // 高速基准速度
+#define READY_TURN_BASE_SPEED 50  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 35        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -113,13 +113,13 @@ typedef struct {
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.2f   // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.3f  // 直角转弯时的GKD值
-#define LOSE_lINE_KP 0.18f          // 丢线时的kp值
+#define RIGHT_ANGLE_TURN_GKD -0.35f  // 直角转弯时的GKD值
+#define LOSE_lINE_KP 0.2f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.08f          // 丢线时的kd值
 #define LOSE_LINE_GKD -0.15f         // 丢线时的gkd值
-#define RESTORE_KP 0.1f             // 恢复模式的kp值
+#define RESTORE_KP 0.15f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
 #define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
@@ -545,25 +545,25 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.15f;
-  direction_pid.kp2 = 0.0003f;
+  direction_pid.kp = 0.2f;
+  direction_pid.kp2 = 0.0005f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.15f;
+  direction_pid.GKD = -0.18f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 20.0f;
-  speed_pid_left.ki = 2.1f;
-  speed_pid_left.kd = 0.0f;
+  speed_pid_left.kp = 40.0f;
+  speed_pid_left.ki = 2.5f;
+  speed_pid_left.kd = 0.2f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = HIGH_BASE_SPEED;
 
-  speed_pid_right.kp = 20.0f;
-  speed_pid_right.ki = 2.3f;
-  speed_pid_right.kd = 0.0f;
+  speed_pid_right.kp = 40.0f;
+  speed_pid_right.ki = 2.5f;
+  speed_pid_right.kd = 0.2f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = HIGH_BASE_SPEED;
@@ -1036,10 +1036,10 @@ int main(void)
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
     gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
     
-    // if(count % 500 == 0)
-    // {
-    //   printf("%d\r\n",record_path_flag); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
-    // }
+    if(count % 500 == 0)
+    {
+      printf("%d\r\n",record_path_flag); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
+    }
 
     //  if(count % 200){
     //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
