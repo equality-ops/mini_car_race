@@ -1,6 +1,11 @@
 --cpu Cortex-M3
 "micro_smartcar\startup_stm32f103xb.o"
 "micro_smartcar\main.o"
+"micro_smartcar\gpio.o"
+"micro_smartcar\dma.o"
+"micro_smartcar\spi.o"
+"micro_smartcar\tim.o"
+"micro_smartcar\usart.o"
 "micro_smartcar\stm32f1xx_it.o"
 "micro_smartcar\stm32f1xx_hal_msp.o"
 "micro_smartcar\stm32f1xx_hal_gpio_ex.o"

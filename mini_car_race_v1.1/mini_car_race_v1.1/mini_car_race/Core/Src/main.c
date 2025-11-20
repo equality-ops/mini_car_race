@@ -19,6 +19,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
+#include "spi.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -63,8 +68,8 @@ typedef struct {
 }ROBOT_CONFIG;
 
 typedef struct {
-  int left_encoder_count;  // 左编码器计数
-  int right_encoder_count; // 右编码器计数
+  int32_t left_encoder_count;  // 左编码器计数
+  int32_t right_encoder_count; // 右编码器计数
   float gyro_z_rate;      // 陀螺仪z轴角速度
 }SENSOR_DATA;
 
@@ -92,7 +97,7 @@ typedef struct {
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70        // 高速基准速度
-#define READY_TURN_BASE_SPEED 30  // 准备直角转弯基准速度
+#define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
@@ -103,23 +108,23 @@ typedef struct {
 #define TURN_OUTPUTMIN -3000     // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
-#define DOTTED_LINE_PHOTO_ERROR_LIMIt 371.0f  // 判断虚线的光电管误差阈值
-#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1079.0f // 判断直角弯的光电管误差阈值
+#define DOTTED_LINE_PHOTO_ERROR_LIMIt 401.0f  // 判断虚线的光电管误差阈值
+#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1479.0f // 判断直角弯的光电管误差阈值
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KP 0.2f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.8f  // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.3f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.18f          // 丢线时的kp值
-#define lOSE_lINE_KD 0.08f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.4f         // 丢线时的gkd值
+#define LOSE_lINE_KD 0.08f          // 丢线时的kd值
+#define LOSE_LINE_GKD -0.15f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
 #define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
 #define ROUNDABOUT_DETECT_TIMES 6         // 环岛的检测次数
-#define CROSS_LINE_DETECT_TIMES 4         // 十字路口的检测次数
+#define CROSS_LINE_DETECT_TIMES 6         // 十字路口的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 400     // 恢复模式计数器阈值
@@ -145,16 +150,6 @@ typedef struct {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-SPI_HandleTypeDef hspi1;
-DMA_HandleTypeDef hdma_spi1_rx;
-DMA_HandleTypeDef hdma_spi1_tx;
-
-TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim4;
-
-UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 // 缓冲区数组定义,position为位置式PID，incremental为增量式PID,L为左电机，R为右电机`
@@ -203,9 +198,9 @@ volatile static int16_t photo_error_weight[12] = {-440,-360,-280,-200,-120,-80,8
 PID speed_pid_left, speed_pid_right;                     // 速度环PID定义
 PID direction_pid;                                       // 转向环PID定义
 IF_DISPERSE if_disperse = {0,0};
-ROBOT_CONFIG robot_config = {0.065f, 0.12f, 360, 16.4f, 0.33, 1}; // 智能车硬件参数初始化
+ROBOT_CONFIG robot_config = {3.0f, 15.0f, 4096, 0.017, 1.0, 1}; // 智能车硬件参数初始化
 SENSOR_DATA sensor_data = {0, 0, 0.0f}; // 传感器数据初始化
-POSE pose = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f}; // 位置数据初始化
+POSE pose = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f}; // 位置数据初始化
 PATH path_config = {-1.0f, -1.0f, 0, 0}; // 路径规划初始化
 
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
@@ -213,14 +208,6 @@ float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_TIM1_Init(void);
-static void MX_TIM2_Init(void);
-static void MX_TIM3_Init(void);
-static void MX_TIM4_Init(void);
-static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 // 参数说明：raw_gyro_z 原始陀螺仪z轴数据
 float filtered_gyro_z(float raw_gyro_z)
@@ -244,7 +231,8 @@ void Read_sensors(void)
   // 获取当前编码器值
   sensor_data.left_encoder_count = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
   sensor_data.right_encoder_count = -(int16_t)__HAL_TIM_GET_COUNTER(&htim3);
-  __HAL_TIM_SET_COUNTER(&htim4, 0); // 重置计数器
+  // 重置计数器
+  __HAL_TIM_SET_COUNTER(&htim4, 0);
   __HAL_TIM_SET_COUNTER(&htim3, 0);
 
   // 获取滤波后的陀螺仪数据
@@ -260,33 +248,15 @@ float Compute_dist(float enconder_count)
 
 void Update_odometry(void)
 {
-  if(pose.total_distance < 0.0f) return; // 如果总距离计数器关闭则不更新里程计
+  if(fabs(pose.total_distance + 5.0) <= 1e-7) return; // 如果总距离计数器关闭则不更新里程计
 
   // 计算左右轮的运动距离
   float dist_left = Compute_dist(sensor_data.left_encoder_count);
   float dist_right = Compute_dist(sensor_data.right_encoder_count);
   // 计算车辆整体运动
   float linear_dist = (dist_left + dist_right) / 2;
-  float delta_theta = (dist_right - dist_left) / robot_config.wheel_base;
-  // 使用陀螺仪数据矫正角度
-  float gyro_theta = sensor_data.gyro_z_rate * robot_config.gyro_scale;
-  // 互补滤波，融合编码器和陀螺仪数据
-  float fused_theta = 0.8f * delta_theta + 0.2f * gyro_theta;
-
-  // 更新目前位置
-  pose.current_X += linear_dist * cosf(pose.current_theta + fused_theta / 2.0f);
-  pose.current_Y += linear_dist * sinf(pose.current_theta + fused_theta / 2.0f);
-  pose.current_theta += fused_theta;
-  
-  pose.total_distance += sqrtf((pose.current_X - pose.prev_X) * (pose.current_X - pose.prev_X) + (pose.current_Y - pose.prev_Y) * (pose.current_Y - pose.prev_Y));
-
-  // 规范化角度(保持在 -π 到 π 之间)
-  if(pose.current_theta > PI) pose.current_theta -= 2 * PI;
-  if(pose.current_theta < -PI) pose.current_theta += 2 * PI;
-  
-  // 更新上一次位置
-  pose.prev_X = pose.current_X;
-  pose.prev_Y = pose.current_Y;
+  // 更新总距离计数器
+  pose.total_distance += linear_dist; 
 }
 
 int8_t Path_choose(void)
@@ -294,13 +264,14 @@ int8_t Path_choose(void)
   if(pose.total_distance > path_config.Ready_angle_distance_Continuous_angle && path_config.Ready_angle_distance_Continuous_angle > 0.0f)
   {
     path_config.Ready_angle_distance_Continuous_angle = -1.0f; // 标记为已进入连续转弯
+    path_config.Finish_angle_distance_Continuous_angle = 670.0f; // 此为后续需要完成连续转弯的距离
     pose.total_distance = 0.0f; // 重置总距离计数器
     record_path_flag = 1; // 准备进入连续转弯
   }
   else if(pose.total_distance > path_config.Finish_angle_distance_Continuous_angle && path_config.Finish_angle_distance_Continuous_angle > 0.0f)
   {
     path_config.Finish_angle_distance_Continuous_angle = -1.0f; // 标记为已完成连续转弯
-    pose.total_distance = -1.0f; // 关闭总距离计数器
+    pose.total_distance = -5.0f; // 关闭总距离计数器
     record_path_flag = 0; // 完成连续转弯
   }
 
@@ -530,7 +501,7 @@ void Compute_target(int8_t motor)
     }
     else if(current_mode == RESTORE_NORMAL_MODE)
     {
-      speed_pid_left.target = TURN_BASE_SPEED + (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * (restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
+      speed_pid_left.target = TURN_BASE_SPEED + (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) - direction_pid.output;
     }
     else // 一般情况
     {
@@ -556,13 +527,13 @@ void Compute_target(int8_t motor)
     }
     else if(current_mode == RESTORE_NORMAL_MODE)
     {
-      speed_pid_right.target = TURN_BASE_SPEED + (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * (restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
+      speed_pid_right.target = TURN_BASE_SPEED + (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * ((float)restore_count / RESTORE_NORMAL_COUNT) + direction_pid.output;
     }
     else // 一般情况
     {
       if(Path_choose())
       {
-        speed_pid_left.target = READY_TURN_BASE_SPEED + direction_pid.output;
+        speed_pid_right.target = READY_TURN_BASE_SPEED + direction_pid.output;
       }
       else
       {
@@ -578,7 +549,7 @@ void PID_Init(void)
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.1f;
+  direction_pid.GKD = -0.15f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
@@ -669,7 +640,7 @@ float Loseline_mode(void) // 丢线模式函数
   {
     direction_pid.kp = RIGHT_ANGLE_TURN_KP;
     direction_pid.kd = RIGHT_ANGLE_TURN_KD;
-    direction_pid.GKD = LOSE_LINE_GKD;
+    direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
     if(Error_MAX > 0.0f)
     {
       record_Error_MAX = PHOTO_ERROR_MAX;
@@ -690,8 +661,8 @@ float Loseline_mode(void) // 丢线模式函数
   else
   {
     direction_pid.kp = LOSE_lINE_KP;
-    direction_pid.kd = lOSE_lINE_KD;
-    direction_pid.GKD = record_gkd;
+    direction_pid.kd = LOSE_lINE_KD;
+    direction_pid.GKD = LOSE_LINE_GKD;
     return Error_MAX;
   }
 }
@@ -724,7 +695,7 @@ int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
 
 int8_t If_on_right_angle_turn(float photo_error) // 判断是否处于直角转弯模式函数
 {
-  if((valid_count >= 7 && valid_count <= 9 && (fabs(photo_error) * (valid_count) >= 1079.0f)) || current_mode == START_RIGHT_ANGLE_MODE)
+  if((valid_count >= 7 && valid_count <= 9 && (fabs(photo_error) * (valid_count) >= RIGHT_ANGLE_PHOTO_ERROR_LIMIT)) || current_mode == START_RIGHT_ANGLE_MODE)
   {
     return 1; // 处于直角转弯模式
   }
@@ -819,9 +790,10 @@ void Cross_line_mode(void) // 十字路口模式函数
     {
       current_mode = READY_DOTTED_LINE_MODE; // 准备进入虚线模式
       path_config.Pass_cross_line_times = 0; // 十字路口通过次数清零
-      pose.total_distance = 0.0f;
-      path_config.Finish_angle_distance_Continuous_angle = 0.0f; // 需要根据实际赛道更改参数
-      path_config.Ready_angle_distance_Continuous_angle = 0.0f;
+      pose.total_distance = 0.0f; // 启用总距离计数器 
+
+      // 此为后续需要准备进入直角转弯的距离
+      path_config.Ready_angle_distance_Continuous_angle = 170.0f;
     }
   }
 }
@@ -860,20 +832,20 @@ void Turn_control(void) // 转向环控制
           direction_pid.kd = record_kd;
         }
       }
+      else if(photo_error == 9999) // 丢线情况
+      {  
+        photo_error = Loseline_mode();
+      }
       else if(current_mode == READY_DOTTED_LINE_MODE) // 准备通过虚线情况
       {
         direction_pid.kp = record_kp;  
         direction_pid.kd = record_kd;
         direction_pid.GKD = record_gkd;
-      } 
+      }
       else if(If_on_cross_line(photo_error)) // 十字路口情况
       {
         Cross_line_mode();
-      }
-      else if(photo_error == 9999) // 丢线情况
-      {  
-        photo_error = Loseline_mode();
-      }
+      } 
       else // 一般情况
       {
         photo_error = Normal_mode(photo_error);
@@ -1063,10 +1035,17 @@ int main(void)
     //以下为陀螺仪使用示例
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
     gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
+    
+    // if(count % 500 == 0)
+    // {
+    //   printf("%d\r\n",record_path_flag); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
+    // }
 
     //  if(count % 200){
     //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
     //  }
+
+
       // accel_x=BMI270_acc_transition(BMI270_accel_x);//将原始加速度计数据转换为物理值，单位为g，一般不需要使用此数据
     // accel_y=BMI270_acc_transition(BMI270_accel_y);
     // accel_z=BMI270_acc_transition(BMI270_accel_z);
@@ -1123,402 +1102,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief TIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM1_Init(void)
-{
-
-  /* USER CODE BEGIN TIM1_Init 0 */
-
-  /* USER CODE END TIM1_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
-
-  /* USER CODE BEGIN TIM1_Init 1 */
-
-  /* USER CODE END TIM1_Init 1 */
-  htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 7199;
-  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime = 0;
-  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM1_Init 2 */
-
-  /* USER CODE END TIM1_Init 2 */
-  HAL_TIM_MspPostInit(&htim1);
-
-}
-
-/**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 71;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 999;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_Encoder_InitTypeDef sConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 0;
-  sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 0;
-  if (HAL_TIM_Encoder_Init(&htim3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-
-}
-
-/**
-  * @brief TIM4 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM4_Init(void)
-{
-
-  /* USER CODE BEGIN TIM4_Init 0 */
-
-  /* USER CODE END TIM4_Init 0 */
-
-  TIM_Encoder_InitTypeDef sConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM4_Init 1 */
-
-  /* USER CODE END TIM4_Init 1 */
-  htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
-  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
-  sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC1Filter = 0;
-  sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-  sConfig.IC2Filter = 0;
-  if (HAL_TIM_Encoder_Init(&htim4, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM4_Init 2 */
-
-  /* USER CODE END TIM4_Init 2 */
-
-}
-
-/**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
-
-  /* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|R_DIR_Pin|MUX_0_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, L_DIR_Pin|MUX_1_Pin|MUX_2_Pin|MUX_3_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : L_DIR_Pin */
-  GPIO_InitStruct.Pin = L_DIR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(L_DIR_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : R_DIR_Pin */
-  GPIO_InitStruct.Pin = R_DIR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(R_DIR_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MUX_READ_Pin */
-  GPIO_InitStruct.Pin = MUX_READ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MUX_READ_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MUX_0_Pin */
-  GPIO_InitStruct.Pin = MUX_0_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  HAL_GPIO_Init(MUX_0_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : MUX_1_Pin MUX_2_Pin MUX_3_Pin */
-  GPIO_InitStruct.Pin = MUX_1_Pin|MUX_2_Pin|MUX_3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */

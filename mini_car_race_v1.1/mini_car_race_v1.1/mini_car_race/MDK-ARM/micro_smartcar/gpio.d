@@ -1,5 +1,5 @@
-micro_smartcar/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
-  ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
+micro_smartcar/gpio.o: ..\Core\Src\gpio.c ..\Core\Inc\gpio.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
   ..\Core\Inc\stm32f1xx_hal_conf.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h \
@@ -28,12 +28,4 @@ micro_smartcar/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_spi.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h \
-  ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
-  ..\Core\Inc\dma.h ..\Core\Inc\spi.h ..\Core\Inc\tim.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\gpio.h ..\Core\code\dodo_BMI270.h \
-  ..\Core\code\bmi270_port.h ..\Core\code\bmi270.h ..\Core\code\bmi2.h \
-  ..\Core\code\bmi2_defs.h \
-  D:\ruanjian\keil\ARM\ARMCLANG\Bin\..\include\stdio.h \
-  ..\Core\code\multiplexer.h \
-  D:\ruanjian\keil\ARM\ARMCLANG\Bin\..\include\stdlib.h \
-  D:\ruanjian\keil\ARM\ARMCLANG\Bin\..\include\math.h
+  ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h
