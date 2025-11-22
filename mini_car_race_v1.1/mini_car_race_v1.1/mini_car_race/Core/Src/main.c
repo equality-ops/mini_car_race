@@ -97,8 +97,8 @@ typedef struct {
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 70        // 高速基准速度
-#define READY_TURN_BASE_SPEED 50  // 准备直角转弯基准速度
-#define TURN_BASE_SPEED 35        // 直角转弯基准速度     
+#define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -109,7 +109,7 @@ typedef struct {
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
 #define DOTTED_LINE_PHOTO_ERROR_LIMIt 401.0f  // 判断虚线的光电管误差阈值
-#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1479.0f // 判断直角弯的光电管误差阈值
+#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1079.0f // 判断直角弯的光电管误差阈值
 #define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
 
@@ -126,7 +126,7 @@ typedef struct {
 #define ROUNDABOUT_DETECT_TIMES 6         // 环岛的检测次数
 #define CROSS_LINE_DETECT_TIMES 6         // 十字路口的检测次数
 
-#define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
+#define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 400     // 恢复模式计数器阈值
 #define ROUNDABOUT_COUNT 150        // 环岛模式计数器阈值
 
@@ -264,7 +264,7 @@ int8_t Path_choose(void)
   if(pose.total_distance > path_config.Ready_angle_distance_Continuous_angle && path_config.Ready_angle_distance_Continuous_angle > 0.0f)
   {
     path_config.Ready_angle_distance_Continuous_angle = -1.0f; // 标记为已进入连续转弯
-    path_config.Finish_angle_distance_Continuous_angle = 690.0f; // 此为后续需要完成连续转弯的距离
+    path_config.Finish_angle_distance_Continuous_angle = 680.0f; // 此为后续需要完成连续转弯的距离
     pose.total_distance = 0.0f; // 重置总距离计数器
     record_path_flag = 1; // 准备进入连续转弯
   }
@@ -493,7 +493,7 @@ void Compute_target(int8_t motor)
   {
     if(current_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_left.target = READY_TURN_BASE_SPEED - (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * ((float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT) - direction_pid.output;
+      speed_pid_left.target = TURN_BASE_SPEED - direction_pid.output;
     }
     else if((current_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1) || current_mode == READY_DOTTED_LINE_MODE)
     {
@@ -519,7 +519,7 @@ void Compute_target(int8_t motor)
   {
     if(current_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_right.target = READY_TURN_BASE_SPEED - (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * ((float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT) + direction_pid.output;
+      speed_pid_right.target = TURN_BASE_SPEED + direction_pid.output;
     }
     else if((current_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1) || current_mode == READY_DOTTED_LINE_MODE)
     {
@@ -546,24 +546,24 @@ void Compute_target(int8_t motor)
 void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.15f;
-  direction_pid.kp2 = 0.0001f;
+  direction_pid.kp2 = 0.00015f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.1f;
+  direction_pid.GKD = -0.15f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 40.0f;
-  speed_pid_left.ki = 2.5f;
-  speed_pid_left.kd = 0.2f;
+  speed_pid_left.kp = 20.0f;
+  speed_pid_left.ki = 2.1f;
+  speed_pid_left.kd = 0.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = HIGH_BASE_SPEED;
 
-  speed_pid_right.kp = 40.0f;
-  speed_pid_right.ki = 2.5f;
-  speed_pid_right.kd = 0.2f;
+  speed_pid_right.kp = 20.0f;
+  speed_pid_right.ki = 2.3f;
+  speed_pid_right.kd = 0.0f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = HIGH_BASE_SPEED;
@@ -793,7 +793,7 @@ void Cross_line_mode(void) // 十字路口模式函数
       pose.total_distance = 0.0f; // 启用总距离计数器 
 
       // 此为后续需要准备进入直角转弯的距离
-      path_config.Ready_angle_distance_Continuous_angle = 170.0f;
+      path_config.Ready_angle_distance_Continuous_angle = 214.0f;
     }
   }
 }
@@ -1027,10 +1027,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // 速度环pid调试输出
-    if(count % 1 ==0){
-      printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
-    }
+    // // 速度环pid调试输出
+    // if(count % 1 ==0){
+    //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    // }
 
     //以下为陀螺仪使用示例
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
