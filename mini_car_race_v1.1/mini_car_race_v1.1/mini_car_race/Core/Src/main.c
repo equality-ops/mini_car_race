@@ -546,10 +546,10 @@ void Compute_target(int8_t motor)
 void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.15f;
-  direction_pid.kp2 = 0.00015f;
+  direction_pid.kp2 = 0.0001f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.15f;
+  direction_pid.GKD = -0.1f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
