@@ -264,7 +264,7 @@ int8_t Path_choose(void)
   if(pose.total_distance > path_config.Ready_angle_distance_Continuous_angle && path_config.Ready_angle_distance_Continuous_angle > 0.0f)
   {
     path_config.Ready_angle_distance_Continuous_angle = -1.0f; // 标记为已进入连续转弯
-    path_config.Finish_angle_distance_Continuous_angle = 670.0f; // 此为后续需要完成连续转弯的距离
+    path_config.Finish_angle_distance_Continuous_angle = 690.0f; // 此为后续需要完成连续转弯的距离
     pose.total_distance = 0.0f; // 重置总距离计数器
     record_path_flag = 1; // 准备进入连续转弯
   }
@@ -493,7 +493,7 @@ void Compute_target(int8_t motor)
   {
     if(current_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_left.target = TURN_BASE_SPEED - direction_pid.output;
+      speed_pid_left.target = READY_TURN_BASE_SPEED - (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * ((float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT) - direction_pid.output;
     }
     else if((current_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1) || current_mode == READY_DOTTED_LINE_MODE)
     {
@@ -519,7 +519,7 @@ void Compute_target(int8_t motor)
   {
     if(current_mode == START_RIGHT_ANGLE_MODE) // 直角转弯模式下基准速度线性降为LOW_BASE_SPEED
     {
-      speed_pid_right.target = TURN_BASE_SPEED + direction_pid.output;
+      speed_pid_right.target = READY_TURN_BASE_SPEED - (READY_TURN_BASE_SPEED - TURN_BASE_SPEED) * ((float)right_angle_turn_count / RIGHT_ANGLE_TURN_COUNT) + direction_pid.output;
     }
     else if((current_mode == READY_RIGHT_ANGLE_MODE && right_angle_detect_flags >= 1) || current_mode == READY_DOTTED_LINE_MODE)
     {
@@ -545,11 +545,11 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.2f;
-  direction_pid.kp2 = 0.0005f;
+  direction_pid.kp = 0.15f;
+  direction_pid.kp2 = 0.0001f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.18f;
+  direction_pid.GKD = -0.1f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
