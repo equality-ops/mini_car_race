@@ -96,7 +96,7 @@ typedef struct {
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 75        // 高速基准速度
+#define HIGH_BASE_SPEED 70        // 高速基准速度
 #define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 20        // 直角转弯基准速度     
 
@@ -122,12 +122,12 @@ typedef struct {
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
-#define RIGHT_ANGLE_DETECT_TIMES 6        // 直角转弯的检测次数
-#define ROUNDABOUT_DETECT_TIMES 6         // 环岛的检测次数
-#define CROSS_LINE_DETECT_TIMES 6         // 十字路口的检测次数
+#define RIGHT_ANGLE_DETECT_TIMES 10        // 直角转弯的检测次数
+#define ROUNDABOUT_DETECT_TIMES 10         // 环岛的检测次数
+#define CROSS_LINE_DETECT_TIMES 10         // 十字路口的检测次数
 
-#define RIGHT_ANGLE_TURN_COUNT 50    // 直角转弯模式计数器阈值
-#define RESTORE_NORMAL_COUNT 400     // 恢复模式计数器阈值
+#define RIGHT_ANGLE_TURN_COUNT 200    // 直角转弯模式计数器阈值
+#define RESTORE_NORMAL_COUNT 200     // 恢复模式计数器阈值
 #define ROUNDABOUT_COUNT 150        // 环岛模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
@@ -793,7 +793,7 @@ void Cross_line_mode(void) // 十字路口模式函数
       pose.total_distance = 0.0f; // 启用总距离计数器 
 
       // 此为后续需要准备进入直角转弯的距离
-      path_config.Ready_angle_distance_Continuous_angle = 170.0f;
+      path_config.Ready_angle_distance_Continuous_angle = 210.0f;
     }
   }
 }
