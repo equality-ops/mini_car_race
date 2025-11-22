@@ -96,7 +96,7 @@ typedef struct {
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 80        // 高速基准速度
+#define HIGH_BASE_SPEED 70        // 高速基准速度
 #define READY_TURN_BASE_SPEED 50  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 35        // 直角转弯基准速度     
 
@@ -1027,19 +1027,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // // 速度环pid调试输出
-    // if(count % 1 ==0){
-    //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
-    // }
+    // 速度环pid调试输出
+    if(count % 1 ==0){
+      printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    }
 
     //以下为陀螺仪使用示例
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
     gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
     
-    if(count % 500 == 0)
-    {
-      printf("%d\r\n",record_path_flag); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
-    }
+    // if(count % 500 == 0)
+    // {
+    //   printf("%d\r\n",record_path_flag); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
+    // }
 
     //  if(count % 200){
     //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
