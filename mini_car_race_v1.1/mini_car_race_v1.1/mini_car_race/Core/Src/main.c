@@ -95,10 +95,10 @@ typedef struct {
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 70        // 高速基准速度
-#define READY_TURN_BASE_SPEED 40  // 准备直角转弯基准速度
-#define TURN_BASE_SPEED 20        // 直角转弯基准速度     
+#define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
+#define HIGH_BASE_SPEED 80       // 高速基准速度
+#define READY_TURN_BASE_SPEED 50  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 40        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -113,12 +113,12 @@ typedef struct {
 #define PHOTO_ERROR_MAX 600.0f   // 光电管误差能达到的最大值
 #define PHOTO_ERROR_MIN -600.0f  // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.18f   // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.02f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.4f  // 直角转弯时的GKD值
-#define LOSE_lINE_KP 0.2f          // 丢线时的kp值
+#define RIGHT_ANGLE_TURN_GKD -0.5f  // 直角转弯时的GKD值
+#define LOSE_lINE_KP 0.8f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.02f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.25f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -126,9 +126,9 @@ typedef struct {
 #define ROUNDABOUT_DETECT_TIMES 10         // 环岛的检测次数
 #define CROSS_LINE_DETECT_TIMES 6         // 十字路口的检测次数
 
-#define RIGHT_ANGLE_TURN_COUNT 200    // 直角转弯模式计数器阈值
-#define RESTORE_NORMAL_COUNT 200     // 恢复模式计数器阈值
-#define ROUNDABOUT_COUNT 175        // 环岛模式计数器阈值
+#define RIGHT_ANGLE_TURN_COUNT 100    // 直角转弯模式计数器阈值
+#define RESTORE_NORMAL_COUNT 300     // 恢复模式计数器阈值
+#define ROUNDABOUT_COUNT 135        // 环岛模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
@@ -264,7 +264,7 @@ int8_t Path_choose(void)
   if(pose.total_distance > path_config.Ready_angle_distance_Continuous_angle && path_config.Ready_angle_distance_Continuous_angle > 0.0f)
   {
     path_config.Ready_angle_distance_Continuous_angle = -1.0f; // 标记为已进入连续转弯
-    path_config.Finish_angle_distance_Continuous_angle = 670.0f; // 此为后续需要完成连续转弯的距离
+    path_config.Finish_angle_distance_Continuous_angle = 640.0f; // 此为后续需要完成连续转弯的距离
     pose.total_distance = 0.0f; // 重置总距离计数器
     record_path_flag = 1; // 准备进入连续转弯
   }
@@ -545,11 +545,11 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.15f;
+  direction_pid.kp = 0.41f;
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.15f;
+  direction_pid.GKD = -0.18f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
@@ -756,7 +756,7 @@ float Roundabout_mode(void) // 环岛模式函数
 
   roundabout_count++; // 完成一次对环岛标志的判断
   
-  if(roundabout_count <= 80)
+  if(roundabout_count <= 75)
   {
     return 0.0f;
   }
