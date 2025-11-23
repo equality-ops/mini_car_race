@@ -110,21 +110,21 @@ typedef struct {
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
 #define DOTTED_LINE_PHOTO_ERROR_LIMIt 401.0f  // 判断虚线的光电管误差阈值
 #define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1479.0f // 判断直角弯的光电管误差阈值
-#define PHOTO_ERROR_MAX 800.0f   // 光电管误差能达到的最大值
-#define PHOTO_ERROR_MIN -800.0f  // 光电管误差能达到的最小值
+#define PHOTO_ERROR_MAX 600.0f   // 光电管误差能达到的最大值
+#define PHOTO_ERROR_MIN -600.0f  // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.2f   // 直角转弯时的kp值
-#define RIGHT_ANGLE_TURN_KD 0.08f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.3f  // 直角转弯时的GKD值
-#define LOSE_lINE_KP 0.18f          // 丢线时的kp值
-#define LOSE_lINE_KD 0.08f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.15f         // 丢线时的gkd值
+#define RIGHT_ANGLE_TURN_KP 0.18f   // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KD 0.02f   // 直角转弯时的kd值
+#define RIGHT_ANGLE_TURN_GKD -0.4f  // 直角转弯时的GKD值
+#define LOSE_lINE_KP 0.2f          // 丢线时的kp值
+#define LOSE_lINE_KD 0.02f          // 丢线时的kd值
+#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
-#define RIGHT_ANGLE_DETECT_TIMES 10        // 直角转弯的检测次数
+#define RIGHT_ANGLE_DETECT_TIMES 6       // 直角转弯的检测次数
 #define ROUNDABOUT_DETECT_TIMES 10         // 环岛的检测次数
-#define CROSS_LINE_DETECT_TIMES 10         // 十字路口的检测次数
+#define CROSS_LINE_DETECT_TIMES 6         // 十字路口的检测次数
 
 #define RIGHT_ANGLE_TURN_COUNT 200    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 200     // 恢复模式计数器阈值
@@ -756,7 +756,7 @@ float Roundabout_mode(void) // 环岛模式函数
 
   roundabout_count++; // 完成一次对环岛标志的判断
   
-  if(roundabout_count <= 100)
+  if(roundabout_count <= 80)
   {
     return 0.0f;
   }
