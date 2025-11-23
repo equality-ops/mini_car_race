@@ -128,7 +128,7 @@ typedef struct {
 
 #define RIGHT_ANGLE_TURN_COUNT 200    // 直角转弯模式计数器阈值
 #define RESTORE_NORMAL_COUNT 200     // 恢复模式计数器阈值
-#define ROUNDABOUT_COUNT 150        // 环岛模式计数器阈值
+#define ROUNDABOUT_COUNT 175        // 环岛模式计数器阈值
 
 #define LEFT_MOTOR -1              // 左电机标志
 #define RIGHT_MOTOR 1              // 右电机标志
