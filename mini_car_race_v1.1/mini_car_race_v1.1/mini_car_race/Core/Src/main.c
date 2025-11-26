@@ -1041,10 +1041,10 @@ int main(void)
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
     gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
     
-    if(count % 100 == 0)
-    {
-      printf("%d\r\n",path_config.Pass_cross_line_times); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
-    }
+    // if(count % 100 == 0)
+    // {
+    //   printf("%d\r\n",path_config.Pass_cross_line_times); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
+    // }
 
     //  if(count % 200){
     //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
