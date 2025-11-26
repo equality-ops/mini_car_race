@@ -96,9 +96,9 @@ typedef struct {
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 80       // 高速基准速度
-#define READY_TURN_BASE_SPEED 50  // 准备直角转弯基准速度
-#define TURN_BASE_SPEED 45        // 直角转弯基准速度     
+#define HIGH_BASE_SPEED 90       // 高速基准速度
+#define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 55        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -115,12 +115,12 @@ typedef struct {
 
 #define RIGHT_ANGLE_TURN_KP 0.25f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.02f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.6f  // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.7f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.5f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.0f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.4f         // 丢线时的gkd值
-#define RESTORE_KP 0.1f             // 恢复模式的kp值
-#define RESTORE_KD 0.03f            // 恢复模式的kd值
+#define LOSE_LINE_GKD -0.5f         // 丢线时的gkd值
+#define RESTORE_KP 0.15f             // 恢复模式的kp值
+#define RESTORE_KD 0.0f            // 恢复模式的kd值
 
 #define RIGHT_ANGLE_DETECT_TIMES 6       // 直角转弯的检测次数
 #define ROUNDABOUT_DETECT_TIMES 10         // 环岛的检测次数
@@ -552,7 +552,7 @@ void PID_Init(void)
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.19f;
+  direction_pid.GKD = -0.28f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
