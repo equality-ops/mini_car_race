@@ -500,6 +500,8 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+  TIM1->CCR4 = 6500;                                                              ;
   /* USER CODE END 2 */
 
   /* Infinite loop */

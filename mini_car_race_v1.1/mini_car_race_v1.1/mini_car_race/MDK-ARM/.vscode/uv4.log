@@ -1,2 +1,4 @@
 Load "micro_smartcar\\micro_smartcar.axf" 
-Erase Done.Programming Done.Verify OK.Flash Load finished at 22:48:54
+Internal command error
+Error: Flash Download failed  -  Target DLL has been cancelled
+Flash Load finished at 22:18:08
