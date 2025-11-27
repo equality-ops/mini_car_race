@@ -37,7 +37,7 @@ float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, 
     if (fabs(dierroff_buffer_photo_error[i]) > fabs(MAX))
         ^~~~
         abs
-../Core/Src/main.c(814): warning: incompatible pointer types passing 'volatile float[30]' to parameter of type 'volatile int *' [-Wincompatible-pointer-types]
+../Core/Src/main.c(815): warning: incompatible pointer types passing 'volatile float[30]' to parameter of type 'volatile int *' [-Wincompatible-pointer-types]
     Error_MAX = FindMax_WeightedValue(weighted_sum_record, valid_count ,diff_buffer_photo_error); // 更新光电管误差最大值
                                                                         ^~~~~~~~~~~~~~~~~~~~~~~
 ../Core/Src/main.c(290): note: passing argument to parameter 'dierroff_buffer_photo_error' here
@@ -46,7 +46,7 @@ float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, 
 3 warnings generated.
 compiling main.c...
 linking...
-Program Size: Code=27486 RO-data=8582 RW-data=120 ZI-data=10464  
+Program Size: Code=27374 RO-data=8582 RW-data=120 ZI-data=10464  
 FromELF: creating hex file...
 "micro_smartcar\micro_smartcar.axf" - 0 Error(s), 3 Warning(s).
 
@@ -72,7 +72,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:00
 </pre>
 </body>
 </html>

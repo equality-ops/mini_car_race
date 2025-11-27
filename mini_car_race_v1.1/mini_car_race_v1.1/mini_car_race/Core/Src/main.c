@@ -678,14 +678,15 @@ float Loseline_mode(void) // 丢线模式函数
 
 int8_t If_ready_right_angle_turn(float photo_error) // 判断是否准备进入直角转弯模式函数
 {
-  if((fabs(photo_error) < RIGHT_ANGLE_PHOTO_ERROR_LIMIT) && (valid_count == 3 || valid_count == 4 || valid_count == 5 || valid_count == 6))
-  {
-    return 1; // 准备进入直角转弯模式
-  }
-  else
-  {
-    return 0; // 不准备进入直角转弯模式
-  }
+  // if((fabs(photo_error) < RIGHT_ANGLE_PHOTO_ERROR_LIMIT) && (valid_count == 3 || valid_count == 4 || valid_count == 5 || valid_count == 6))
+  // {
+  //   return 1; // 准备进入直角转弯模式
+  // }
+  // else
+  // {
+  //   return 0; // 不准备进入直角转弯模式
+  // }
+  return 0; // 禁用直角转弯模式
 }
 
 int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
