@@ -94,11 +94,11 @@ typedef struct {
 /* USER CODE BEGIN PD */
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
-#define FILTER_SIZE 3             // 微分滤波窗口数量
+#define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 100       // 高速基准速度
-#define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
-#define TURN_BASE_SPEED 55        // 直角转弯基准速度     
+#define READY_TURN_BASE_SPEED 55  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 50        // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -128,11 +128,11 @@ typedef struct {
 
 #define RIGHT_ANGLE_TURN_COUNT 1    // 直角转弯模式计数器阈值(现在为禁用状态)  
 #define RESTORE_NORMAL_COUNT 1     // 恢复模式计数器阈值(现在为禁用状态)
-#define ROUNDABOUT_COUNT 180        // 环岛模式总计数器阈值
+#define ROUNDABOUT_COUNT 150        // 环岛模式总计数器阈值
 #define ROUNFABOUT_RUSH_COUNT 75    // 环岛模式直冲计数器阈值
 
 #define First_distance 210.0f  // 第一段里程计
-#define Second_distance 660.0f  // 第二段里程计
+#define Second_distance 680.0f  // 第二段里程计
 
 #define DOTTED_LINE_BEGINNING 88.0f // 虚线起点
 #define DOTTED_LINE_END 182.0f // 虚线终点
@@ -678,14 +678,16 @@ float Loseline_mode(void) // 丢线模式函数
 
 int8_t If_ready_right_angle_turn(float photo_error) // 判断是否准备进入直角转弯模式函数
 {
-  if((fabs(photo_error) < RIGHT_ANGLE_PHOTO_ERROR_LIMIT) && (valid_count == 3 || valid_count == 4 || valid_count == 5 || valid_count == 6))
-  {
-    return 1; // 准备进入直角转弯模式
-  }
-  else
-  {
-    return 0; // 不准备进入直角转弯模式
-  }
+  // if((fabs(photo_error) < RIGHT_ANGLE_PHOTO_ERROR_LIMIT) && (valid_count == 3 || valid_count == 4 || valid_count == 5 || valid_count == 6))
+  // {
+  //   return 1; // 准备进入直角转弯模式
+  // }
+  // else
+  // {
+  //   return 0; // 不准备进入直角转弯模式
+  // }
+
+  return 0; // 禁用直角转弯模式
 }
 
 int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
