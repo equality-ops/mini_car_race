@@ -3400,7 +3400,7 @@ Image component sizes
         68          0          0          0          0       2230   dma.o
        160          0          0          8        200       4032   dodo_bmi270.o
        292          0          0          0          0       1744   gpio.o
-      3890          0          0         84        446      18965   main.o
+      3890          0          0         84        446      18942   main.o
        210          0          0          0          0       2892   multiplexer.o
        314          0          0          0        224       5594   spi.o
         36          8        236          0       1024        840   startup_stm32f103xb.o
@@ -3420,7 +3420,7 @@ Image component sizes
        198          0          0          0         72       5496   usart.o
 
     ----------------------------------------------------------------------
-     25536        272       8582        120      10464     511204   Object Totals
+     25536        272       8582        120      10464     511181   Object Totals
          0          0         32          0          0          0   (incl. Generated)
        148          0          2          0          6          0   (incl. Padding)
 
@@ -3486,8 +3486,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     27494        288       8582        120      10464     511964   Grand Totals
-     27494        288       8582        120      10464     511964   ELF Image Totals
+     27494        288       8582        120      10464     511941   Grand Totals
+     27494        288       8582        120      10464     511941   ELF Image Totals
      27494        288       8582        120          0          0   ROM Totals
 
 ==============================================================================
