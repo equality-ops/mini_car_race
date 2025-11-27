@@ -94,7 +94,7 @@ typedef struct {
 /* USER CODE BEGIN PD */
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
-#define FILTER_SIZE 5             // 微分滤波窗口数量
+#define FILTER_SIZE 3             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 100       // 高速基准速度
 #define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
@@ -115,10 +115,10 @@ typedef struct {
 
 #define RIGHT_ANGLE_TURN_KP 0.4f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.0f   // 直角转弯时的kd值
-#define RIGHT_ANGLE_TURN_GKD -0.23f  // 直角转弯时的GKD值
+#define RIGHT_ANGLE_TURN_GKD -0.15f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.3f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.0f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.1f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -552,24 +552,24 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.12f;
-  direction_pid.kp2 = 0.0003f;
+  direction_pid.kp = 0.22f;
+  direction_pid.kp2 = 0.0001f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.2f;
+  direction_pid.GKD = -0.1f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
-  speed_pid_left.kp = 20.0f;
-  speed_pid_left.ki = 2.1f;
+  speed_pid_left.kp = 25.0f;
+  speed_pid_left.ki = 2.6f;
   speed_pid_left.kd = 0.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
   speed_pid_left.target = HIGH_BASE_SPEED;
 
-  speed_pid_right.kp = 20.0f;
-  speed_pid_right.ki = 2.3f;
+  speed_pid_right.kp = 25.0f;
+  speed_pid_right.ki = 2.6f;
   speed_pid_right.kd = 0.0f;
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
@@ -1036,10 +1036,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // 速度环pid调试输出
-    if(count % 1 ==0){
-      printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
-    }
+    // // 速度环pid调试输出
+    // if(count % 1 ==0){
+    //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    // }
 
     //以下为陀螺仪使用示例
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据

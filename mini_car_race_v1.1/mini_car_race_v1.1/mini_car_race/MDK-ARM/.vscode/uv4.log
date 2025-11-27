@@ -1,4 +1,2 @@
 Load "micro_smartcar\\micro_smartcar.axf" 
-Erase Done.Programming Done.Cannot access Memory
-Error: Flash Download failed  -  "Cortex-M3"
-Flash Load finished at 01:00:25
+Erase Done.Programming Done.Verify OK.Flash Load finished at 02:09:38
