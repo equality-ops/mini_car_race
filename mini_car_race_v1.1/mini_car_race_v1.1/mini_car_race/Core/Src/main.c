@@ -96,7 +96,7 @@ typedef struct {
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 80       // 高速基准速度
+#define HIGH_BASE_SPEED 100       // 高速基准速度
 #define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 55        // 直角转弯基准速度     
 
@@ -1036,10 +1036,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // // 速度环pid调试输出
-    // if(count % 1 ==0){
-    //   printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
-    // }
+    // 速度环pid调试输出
+    if(count % 1 ==0){
+      printf("%d %d %f %f %d %d\r\n", speed_pid_left.actual, speed_pid_right.actual, speed_pid_left.output, speed_pid_right.output, speed_pid_left.target, speed_pid_right.target);
+    }
 
     //以下为陀螺仪使用示例
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
