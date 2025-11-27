@@ -128,7 +128,8 @@ typedef struct {
 
 #define RIGHT_ANGLE_TURN_COUNT 1    // 直角转弯模式计数器阈值(现在为禁用状态)  
 #define RESTORE_NORMAL_COUNT 1     // 恢复模式计数器阈值(现在为禁用状态)
-#define ROUNDABOUT_COUNT 180        // 环岛模式计数器阈值
+#define ROUNDABOUT_COUNT 180        // 环岛模式总计数器阈值
+#define ROUNFABOUT_RUSH_COUNT 75    // 环岛模式直冲计数器阈值
 
 #define First_distance 210.0f  // 第一段里程计
 #define Second_distance 660.0f  // 第二段里程计
@@ -551,7 +552,7 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.1f;
+  direction_pid.kp = 0.12f;
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
@@ -762,7 +763,7 @@ float Roundabout_mode(void) // 环岛模式函数
 
   roundabout_count++; // 完成一次对环岛标志的判断
   
-  if(roundabout_count <= 75)
+  if(roundabout_count <= ROUNFABOUT_RUSH_COUNT)
   {
     return 0.0f;
   }
