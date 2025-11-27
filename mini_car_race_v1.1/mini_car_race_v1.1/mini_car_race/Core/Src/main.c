@@ -562,7 +562,7 @@ void PID_Init(void)
   direction_pid.target = 0;
 
   speed_pid_left.kp = 20.0f;
-  speed_pid_left.ki = 2.1f;
+  speed_pid_left.ki = 2.3f;
   speed_pid_left.kd = 0.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
