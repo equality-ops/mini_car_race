@@ -96,7 +96,7 @@ typedef struct {
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
-#define HIGH_BASE_SPEED 80       // 高速基准速度
+#define HIGH_BASE_SPEED 90       // 高速基准速度
 #define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 55        // 直角转弯基准速度     
 
@@ -116,7 +116,7 @@ typedef struct {
 #define RIGHT_ANGLE_TURN_KP 0.4f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.0f   // 直角转弯时的kd值
 #define RIGHT_ANGLE_TURN_GKD -0.23f  // 直角转弯时的GKD值
-#define LOSE_lINE_KP 0.3f          // 丢线时的kp值
+#define LOSE_lINE_KP 0.35f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.0f          // 丢线时的kd值
 #define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
@@ -131,7 +131,7 @@ typedef struct {
 #define ROUNDABOUT_COUNT 180        // 环岛模式计数器阈值
 
 #define First_distance 210.0f  // 第一段里程计
-#define Second_distance 660.0f  // 第二段里程计
+#define Second_distance 680.0f  // 第二段里程计
 
 #define DOTTED_LINE_BEGINNING 88.0f // 虚线起点
 #define DOTTED_LINE_END 182.0f // 虚线终点
@@ -551,17 +551,17 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.1f;
+  direction_pid.kp = 0.12f;
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.2f;
+  direction_pid.GKD = -0.25f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
 
   speed_pid_left.kp = 20.0f;
-  speed_pid_left.ki = 2.1f;
+  speed_pid_left.ki = 2.3f;
   speed_pid_left.kd = 0.0f;
   speed_pid_left.A = 1200.0f;
   speed_pid_left.B = 600.0f;
@@ -701,14 +701,16 @@ int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
 
 int8_t If_on_right_angle_turn(float photo_error) // 判断是否处于直角转弯模式函数
 {
-  if((valid_count >= 7 && valid_count <= 9 && (fabs(photo_error) * (valid_count) >= RIGHT_ANGLE_PHOTO_ERROR_LIMIT)) || current_mode == START_RIGHT_ANGLE_MODE)
-  {
-    return 1; // 处于直角转弯模式
-  }
-  else
-  {
-    return 0; // 不处于直角转弯模式
-  }
+  // if((valid_count >= 7 && valid_count <= 9 && (fabs(photo_error) * (valid_count) >= RIGHT_ANGLE_PHOTO_ERROR_LIMIT)) || current_mode == START_RIGHT_ANGLE_MODE)
+  // {
+  //   return 1; // 处于直角转弯模式
+  // }
+  // else
+  // {
+  //   return 0; // 不处于直角转弯模式
+  // }
+
+  return 0;
 }
 
 int8_t If_on_cross_line(float photo_error) // 判断是否处于十字路口模式函数
