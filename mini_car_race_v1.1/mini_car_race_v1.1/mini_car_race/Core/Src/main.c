@@ -200,7 +200,7 @@ volatile static float record_gkd = 0.0f;                 // 用于记录转向�
 
 volatile static int8_t current_mode = EXIT_RIGHT_ANGLE_MODE;   // 是否处于直角转弯模式标志
 
-volatile static int16_t photo_error_weight[12] = {-520,-440,-360,-280,-200,-200,200,200,280,360,440,520}; // 光电管加权值数组
+volatile static int16_t photo_error_weight[12] = {-440,-360,-280,-200,-120,-120,120,120,200,280,360,440}; // 光电管加权值数组
 
 PID speed_pid_left, speed_pid_right;                     // 速度环PID定义
 PID direction_pid;                                       // 转向环PID定义
@@ -553,7 +553,7 @@ void Compute_target(int8_t motor)
 void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.12f;
-  direction_pid.kp2 = 0.00008f;
+  direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.2f;
