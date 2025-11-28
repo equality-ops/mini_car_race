@@ -95,7 +95,7 @@ typedef struct {
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 20     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 90       // 高速基准速度
 #define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
 #define TURN_BASE_SPEED 55        // 直角转弯基准速度     
@@ -118,7 +118,7 @@ typedef struct {
 #define RIGHT_ANGLE_TURN_GKD -0.23f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.3f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.0f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.25f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -129,7 +129,7 @@ typedef struct {
 #define RIGHT_ANGLE_TURN_COUNT 1    // 直角转弯模式计数器阈值(现在为禁用状态)  
 #define RESTORE_NORMAL_COUNT 1     // 恢复模式计数器阈值(现在为禁用状态)
 #define ROUNDABOUT_COUNT 180        // 环岛模式总计数器阈值
-#define ROUNFABOUT_RUSH_COUNT 75    // 环岛模式直冲计数器阈值
+#define ROUNFABOUT_RUSH_COUNT 70    // 环岛模式直冲计数器阈值
 
 #define First_distance 210.0f  // 第一段里程计
 #define Second_distance 660.0f  // 第二段里程计
@@ -287,7 +287,7 @@ int8_t Path_choose(void)
 
 // 参数说明：weighted_value 光电管误差，diff_buffer_photo_error 光电管误差缓冲区
 // 功能：更新缓冲区,寻找光电管误差最大值并返回
-float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, volatile dierroff_buffer_photo_error[])
+float FindMax_WeightedValue(float weighted_value, volatile uint8_t valid_count, volatile float dierroff_buffer_photo_error[])
 { // 光电管误差寻最大值函数
   // 更新滑动窗口
   if(valid_count != 0)
@@ -556,7 +556,7 @@ void PID_Init(void)
   direction_pid.kp2 = 0.0003f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.2f;
+  direction_pid.GKD = -0.25f;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
@@ -650,11 +650,10 @@ float Loseline_mode(void) // 丢线模式函数
     return 0.0f;
   }
 
-  if(fabs(Error_MAX) > RIGHT_ANGLE_PHOTO_ERROR_LIMIT) // 判断是否达到直角转弯条件
-  {
     direction_pid.kp = LOSE_lINE_KP;
     direction_pid.kd = LOSE_lINE_KD;
     direction_pid.GKD = LOSE_LINE_GKD;
+
     if(Error_MAX > 0.0f)
     {
       record_Error_MAX = PHOTO_ERROR_MAX;
@@ -663,15 +662,8 @@ float Loseline_mode(void) // 丢线模式函数
     {
       record_Error_MAX = PHOTO_ERROR_MIN;
     }
+
     return record_Error_MAX;
-  }
-  else
-  {
-    direction_pid.kp = LOSE_lINE_KP;
-    direction_pid.kd = LOSE_lINE_KD;
-    direction_pid.GKD = LOSE_LINE_GKD;
-    return Error_MAX;
-  }
 }
 
 
@@ -703,14 +695,16 @@ int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
 
 int8_t If_on_right_angle_turn(float photo_error) // 判断是否处于直角转弯模式函数
 {
-  if((valid_count >= 7 && valid_count <= 9 && (fabs(photo_error) * (valid_count) >= RIGHT_ANGLE_PHOTO_ERROR_LIMIT)) || current_mode == START_RIGHT_ANGLE_MODE)
-  {
-    return 1; // 处于直角转弯模式
-  }
-  else
-  {
-    return 0; // 不处于直角转弯模式
-  }
+  // if((valid_count >= 7 && valid_count <= 9 && (fabs(photo_error) * (valid_count) >= RIGHT_ANGLE_PHOTO_ERROR_LIMIT)) || current_mode == START_RIGHT_ANGLE_MODE)
+  // {
+  //   return 1; // 处于直角转弯模式
+  // }
+  // else
+  // {
+  //   return 0; // 不处于直角转弯模式
+  // }
+
+  return 0;
 }
 
 int8_t If_on_cross_line(float photo_error) // 判断是否处于十字路口模式函数
@@ -1046,10 +1040,10 @@ int main(void)
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
     gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
     
-    // if(count % 100 == 0)
-    // {
-    //   printf("%d\r\n",path_config.Pass_cross_line_times); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
-    // }
+    if(count % 10 == 0)
+    {
+      printf("%f\r\n",Error_MAX); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
+    }
 
     //  if(count % 200){
     //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
