@@ -316,11 +316,11 @@ int8_t If_disperse(uint8_t photo_value, struct DisperseControl* if_disperse) // 
     switch (if_disperse->flags)
     {
       case 0:
-      if_disperse->flags = 1;
-      if_disperse->disperse_count = 1;
-      break;
+        if_disperse->flags = 1;
+        if_disperse->disperse_count = 1;
+        break;
       case 1:
-      break;
+        break;
     }
   }
   else
@@ -577,6 +577,7 @@ float Loseline_mode(void) // 丢线模式函数
   if(pose.total_distance >= DOTTED_LINE_BEGINNING && pose.total_distance <= DOTTED_LINE_END && path_config.Ready_continuous_angle_distance > 0){
     direction_pid.kp = HIGH_SPEED_KP;
     direction_pid.kp2 = HIGH_SPEED_KP2;
+    direction_pid.kd = HIGH_SPEED_KD;
     direction_pid.GKD = HIGH_SPEED_GKD;
     return 0.0f;
   }
