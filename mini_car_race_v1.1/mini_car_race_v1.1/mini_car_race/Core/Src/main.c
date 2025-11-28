@@ -270,7 +270,7 @@ int8_t Path_choose(void)
   if(pose.total_distance > path_config.Ready_continuous_angle_distance && path_config.Ready_continuous_angle_distance > 0.0f)
   {
     path_config.Ready_continuous_angle_distance = -1.0f; // 标记为已进入连续转弯
-    path_config.Ready_continuous_angle_distance = Second_distance; // 此为后续需要完成连续转弯的距离
+    path_config.Finish_continuous_angle_distance = Second_distance; // 此为后续需要完成连续转弯的距离
     pose.total_distance = 0.0f; // 重置总距离计数器
     current_mode = CONTINUOUS_TURN_MODE; // 将当前模式设置为连续直角转弯模式
     record_path_flag = 1; // 准备进入连续转弯
