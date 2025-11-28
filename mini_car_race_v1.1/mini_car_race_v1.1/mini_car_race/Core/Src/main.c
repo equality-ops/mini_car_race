@@ -206,7 +206,7 @@ PID direction_pid;                                       // 转向环PID定义
 IF_DISPERSE if_disperse = {0,0};
 ROBOT_CONFIG robot_config = {3.0f, 15.0f, 4096, 0.017, 1.0, 1}; // 智能车硬件参数初始化
 SENSOR_DATA sensor_data = {0, 0, 0.0f}; // 传感器数据初始化
-POSE pose = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f}; // 位置数据初始化
+POSE pose = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -9999.0f}; // 位置数据初始化
 PATH path_config = {-1.0f, -1.0f, 0, 0}; // 路径规划初始化
 
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
@@ -254,7 +254,7 @@ float Compute_dist(float enconder_count)
 
 void Update_odometry(void)
 {
-  if(fabs(pose.total_distance + 5.0) <= 1e-7) return; // 如果总距离计数器关闭则不更新里程计
+  if(fabs(pose.total_distance + 9999.0f) <= 1e-7) return; // 如果总距离计数器关闭则不更新里程计
 
   // 计算左右轮的运动距离
   float dist_left = Compute_dist(sensor_data.left_encoder_count);
@@ -278,7 +278,7 @@ int8_t Path_choose(void)
   else if(pose.total_distance > path_config.Finish_continuous_angle_distance && path_config.Finish_continuous_angle_distance > 0.0f)
   {
     path_config.Finish_continuous_angle_distance = -1.0f; // 标记为已完成连续转弯
-    pose.total_distance = -5.0f; // 关闭总距离计数器
+    pose.total_distance = -9999.0f; // 关闭总距离计数器
     current_mode = NORMAL_MODE; // 恢复正常高速行驶模式
     record_path_flag = 0; // 完成连续转弯
   }
@@ -722,10 +722,10 @@ void Turn_control(void) // 转向环控制
     }
     else if(current_mode == READY_DOTTED_LINE_MODE) // 准备通过虚线情况
     {
-      direction_pid.kp = HIGH_SPEED_KP;  
-      direction_pid.kp2 = HIGH_SPEED_KP2;
-      direction_pid.kd = HIGH_SPEED_KD;
-      direction_pid.GKD = HIGH_SPEED_GKD;
+      direction_pid.kp = LOW_SPEED_KP;  
+      direction_pid.kp2 = LOW_SPEED_KP2;
+      direction_pid.kd = LOW_SPEED_KD;
+      direction_pid.GKD = LOW_SPEED_GKD;
     }
     else if(If_on_cross_line(photo_error)) // 十字路口情况
     {
