@@ -181,6 +181,9 @@ volatile static int16_t buf_index_gyro_z = 0;  // 陀螺仪数据索引
 
 volatile static float Error_MAX = 0.0f; // 光电管误差最大值
 
+volatile static float base_speed_L = HIGH_BASE_SPEED; // 左电机基准速度记录
+volatile static float base_speed_R = HIGH_BASE_SPEED; // 右电机基准速度记录
+
 volatile static float record_Error_MAX = 0.0f;  // 光电管最大误差计算函数
 
 volatile static int8_t roundabout_detect_flags = 0;   // 环岛检测次数
@@ -501,42 +504,46 @@ void Compute_target(int8_t motor)
   {
     if(current_mode == READY_DOTTED_LINE_MODE || Path_choose()) // 准备进入虚线模式或者连续转弯模式
     {
-      if(speed_pid_left.target == LOW_BASE_SPEED){
-        speed_change_count = 0;
-        return;
+      if(base_speed_L == LOW_BASE_SPEED) speed_change_count = 0;
+
+      if(base_speed_L > LOW_BASE_SPEED){
+        speed_change_count++;
+        base_speed_L = HIGH_BASE_SPEED - (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
       }
-      speed_change_count++;
-      speed_pid_left.target = HIGH_BASE_SPEED - (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
+      speed_pid_left.target = base_speed_L - direction_pid.output;
     }
     else  // 正常模式
     {
-      if(speed_pid_left.target == HIGH_BASE_SPEED){
-        speed_change_count = 0;
-        return;
+      if(base_speed_L == HIGH_BASE_SPEED) speed_change_count = 0;
+
+      if(base_speed_L < HIGH_BASE_SPEED){
+        speed_change_count++;
+        base_speed_L = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
       }
-      speed_change_count++;
-      speed_pid_left.target = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
+      speed_pid_left.target = base_speed_L - direction_pid.output;
     }
   }
   else if (motor == RIGHT_MOTOR)
   {
     if(current_mode == READY_DOTTED_LINE_MODE || Path_choose()) // 准备进入虚线模式或者连续转弯模式
     {
-      if(speed_pid_right.target == LOW_BASE_SPEED){
-        speed_change_count = 0;
-        return;
+      if(base_speed_R == LOW_BASE_SPEED) speed_change_count = 0;
+
+      if(base_speed_R > LOW_BASE_SPEED){
+        speed_change_count++;
+        base_speed_R = HIGH_BASE_SPEED - (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
       }
-      speed_change_count++;
-      speed_pid_right.target = HIGH_BASE_SPEED - (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
+      speed_pid_right.target = base_speed_R + direction_pid.output;      
     }
     else  // 正常模式
     {
-      if(speed_pid_right.target == HIGH_BASE_SPEED){
-        speed_change_count = 0;
-        return;
+      if(base_speed_R == HIGH_BASE_SPEED) speed_change_count = 0;
+
+      if(base_speed_R < HIGH_BASE_SPEED){
+        speed_change_count++;
+        base_speed_R = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
       }
-      speed_change_count++;
-      speed_pid_right.target = LOW_BASE_SPEED + (HIGH_BASE_SPEED - LOW_BASE_SPEED) * ((float)speed_change_count / SPEED_CHANGE_COUNT);
+      speed_pid_right.target = base_speed_R + direction_pid.output;
     }
   }
 }
