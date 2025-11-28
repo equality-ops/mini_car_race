@@ -118,7 +118,7 @@ typedef struct {
 #define RIGHT_ANGLE_TURN_GKD -0.23f  // 直角转弯时的GKD值
 #define LOSE_lINE_KP 0.3f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.0f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.25f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -207,7 +207,7 @@ PID direction_pid;                                       // 转向环PID定义
 IF_DISPERSE if_disperse = {0,0};
 ROBOT_CONFIG robot_config = {3.0f, 15.0f, 4096, 0.017, 1.0, 1}; // 智能车硬件参数初始化
 SENSOR_DATA sensor_data = {0, 0, 0.0f}; // 传感器数据初始化
-POSE pose = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f}; // 位置数据初始化
+POSE pose = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -9999.0f}; // 位置数据初始化
 PATH path_config = {-1.0f, -1.0f, 0, 0}; // 路径规划初始化
 
 float gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z; // 陀螺仪数据
@@ -255,7 +255,7 @@ float Compute_dist(float enconder_count)
 
 void Update_odometry(void)
 {
-  if(fabs(pose.total_distance + 5.0) <= 1e-7) return; // 如果总距离计数器关闭则不更新里程计
+  if(fabs(pose.total_distance + 9999.0f) <= 1e-7) return; // 如果总距离计数器关闭则不更新里程计
 
   // 计算左右轮的运动距离
   float dist_left = Compute_dist(sensor_data.left_encoder_count);
@@ -278,7 +278,7 @@ int8_t Path_choose(void)
   else if(pose.total_distance > path_config.Finish_angle_distance_Continuous_angle && path_config.Finish_angle_distance_Continuous_angle > 0.0f)
   {
     path_config.Finish_angle_distance_Continuous_angle = -1.0f; // 标记为已完成连续转弯
-    pose.total_distance = -5.0f; // 关闭总距离计数器
+    pose.total_distance = -9999.0f; // 关闭总距离计数器
     record_path_flag = 0; // 完成连续转弯
   }
 
@@ -553,7 +553,7 @@ void Compute_target(int8_t motor)
 void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.12f;
-  direction_pid.kp2 = 0.0003f;
+  direction_pid.kp2 = 0.00008f;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.2f;
