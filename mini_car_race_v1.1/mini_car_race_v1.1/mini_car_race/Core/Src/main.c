@@ -95,9 +95,9 @@ typedef struct {
 #define PHOTO_NUM 12              // 光电管数量
 #define integralLimit 20000       // 积分最大值
 #define FILTER_SIZE 5             // 微分滤波窗口数量
-#define FILTER_SIZE_ERROR 30     // 光电管误差滤波窗口数量
+#define FILTER_SIZE_ERROR 30      // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 100       // 高速基准速度
-#define LOW_BASE_SPEED 55  // 准备直角转弯基准速度
+#define LOW_BASE_SPEED 55         // 低速基准速度
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
@@ -107,22 +107,33 @@ typedef struct {
 #define TURN_OUTPUTMIN -3000     // 转向环输出最小值
 #define FINAL_OUTPUTMAX 5400     // 最终输出最大值
 #define FINAL_OUTPUTMIN -5400    // 最终输出最小值
-#define DOTTED_LINE_PHOTO_ERROR_LIMIt 441.0f  // 判断虚线的光电管误差阈值
-#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1319.0f // 判断直角弯的光电管误差阈值
-#define PHOTO_ERROR_MAX 500.0f   // 光电管误差能达到的最大值
-#define PHOTO_ERROR_MIN -500.0f  // 光电管误差能达到的最小值
+#define DOTTED_LINE_PHOTO_ERROR_LIMIt 441.0f   // 判断虚线的光电管误差阈值
+#define RIGHT_ANGLE_PHOTO_ERROR_LIMIT 1319.0f  // 判断直角弯的光电管误差阈值
+#define PHOTO_ERROR_MAX 500.0f    // 光电管误差能达到的最大值
+#define PHOTO_ERROR_MIN -500.0f   // 光电管误差能达到的最小值
 
-#define RIGHT_ANGLE_TURN_KP 0.4f   // 直角转弯时的kp值
-#define RIGHT_ANGLE_TURN_KD 0.0f   // 直角转弯时的kd值
+#define RIGHT_ANGLE_TURN_KP 0.4f     // 直角转弯时的kp值
+#define RIGHT_ANGLE_TURN_KD 0.0f     // 直角转弯时的kd值
+#define RIGHT_ANGLE_TURN_KP2 0.0001f // 直角转弯时的kp2值
 #define RIGHT_ANGLE_TURN_GKD -0.23f  // 直角转弯时的GKD值
-#define LOSE_lINE_KP 0.3f          // 普通丢线时的kp值
-#define LOSE_lINE_KD 0.0f          // 普通丢线时的kd值
-#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
-#define RESTORE_KP 0.1f             // 恢复模式的kp值
-#define RESTORE_KD 0.03f            // 恢复模式的kd值
 
-#define ROUNDABOUT_DETECT_TIMES 8        // 环岛的检测次数
-#define CROSS_LINE_DETECT_TIMES 8        // 十字路口的检测次数
+#define LOSE_lINE_KP 0.3f            // 普通丢线时的kp值
+#define LOSE_lINE_KD 0.0f            // 普通丢线时的kd值
+#define LOSE_lINE_KP2 0.0001f        // 普通丢线时的kp2值
+#define LOSE_LINE_GKD -0.2f          // 普通丢线时的gkd值
+
+#define HIGH_SPEED_KP 0.22f          // 高速行驶时的kp值
+#define HIGH_SPEED_KP2 0.0001f       // 高速行驶时的kp2值
+#define HIGH_SPEED_KD 0.0f           // 高速行驶时的kd值
+#define HIGH_SPEED_GKD -0.1f         // 高速行驶时的gkd值
+
+#define LOW_SPEED_KP 0.22f           // 低速行驶时的kp值
+#define LOW_SPEED_KP2 0.0001f        // 低速行驶时的kp2值
+#define LOW_SPEED_KD 0.0f            // 低速行驶时的kd值
+#define LOW_SPEED_GKD -0.12f         // 低速行驶时的gkd值
+
+#define ROUNDABOUT_DETECT_TIMES 8      // 环岛的检测次数
+#define CROSS_LINE_DETECT_TIMES 8      // 十字路口的检测次数
 
 #define ROUNDABOUT_COUNT 150        // 环岛模式总计数器阈值
 #define ROUNFABOUT_RUSH_COUNT 75    // 环岛模式直冲计数器阈值
@@ -139,7 +150,7 @@ typedef struct {
 #define TURN 0                     // 转向环标志
 
 #define NORMAL_MODE 0              // 正常行驶模式标志
-#define CONTINUOUS_TURN_MODE 1          // 连续转弯模式标志
+#define CONTINUOUS_TURN_MODE 1     // 连续转弯模式标志
 #define ROUNDABOUT_MODE 2          // 环岛模式标志
 #define READY_DOTTED_LINE_MODE 3   // 准备通过虚线模式标志
 
@@ -185,10 +196,6 @@ volatile static uint32_t roundabout_count = 0;  // 环岛模式时间计数器
 volatile static uint32_t speed_change_count = 0;     // 速度改变计数器
 
 volatile static float weighted_sum_record = 0;  // 上一次光电管误差记录
-
-volatile static float record_kp = 0.0f;                  // 用于记录转向环kp值
-volatile static float record_kd = 0.0f;                  // 用于记录转向环kd值
-volatile static float record_gkd = 0.0f;                 // 用于记录转向环gkd值
 
 volatile static int8_t current_mode = NORMAL_MODE;   // 当前模式标志
 
@@ -272,6 +279,7 @@ int8_t Path_choose(void)
   {
     path_config.Finish_continuous_angle_distance = -1.0f; // 标记为已完成连续转弯
     pose.total_distance = -5.0f; // 关闭总距离计数器
+    current_mode = NORMAL_MODE; // 恢复正常高速行驶模式
     record_path_flag = 0; // 完成连续转弯
   }
 
@@ -535,11 +543,11 @@ void Compute_target(int8_t motor)
 
 void PID_Init(void)
 { // 初始化PID参数
-  direction_pid.kp = 0.22f;
-  direction_pid.kp2 = 0.0001f;
+  direction_pid.kp = HIGH_SPEED_KP;
+  direction_pid.kp2 = HIGH_SPEED_KP2;
   direction_pid.ki = 0.0f;
   direction_pid.kd = 0.0f;
-  direction_pid.GKD = -0.1f;
+  direction_pid.GKD = HIGH_SPEED_GKD;
   direction_pid.A = 800.0f;
   direction_pid.B = 200.0f;
   direction_pid.target = 0;
@@ -557,10 +565,6 @@ void PID_Init(void)
   speed_pid_right.A = 1200.0f;
   speed_pid_right.B = 600.0f;
   speed_pid_right.target = HIGH_BASE_SPEED;
-
-  record_kp = direction_pid.kp; // 记录最初的转向环kp值
-  record_kd = direction_pid.kd; // 记录最初的转向环kd值
-  record_gkd = direction_pid.GKD; // 记录最初的转向环gkd值
 }
 
 float Loseline_mode(void) // 丢线模式函数
@@ -571,39 +575,36 @@ float Loseline_mode(void) // 丢线模式函数
   
   // 虚线模式下丢线后误差置零
   if(pose.total_distance >= DOTTED_LINE_BEGINNING && pose.total_distance <= DOTTED_LINE_END && path_config.Ready_continuous_angle_distance > 0){
-    direction_pid.kp = record_kp;
-    direction_pid.kd = record_kd;
-    direction_pid.GKD = record_gkd;
+    direction_pid.kp = HIGH_SPEED_KP;
+    direction_pid.kp2 = HIGH_SPEED_KP2;
+    direction_pid.GKD = HIGH_SPEED_GKD;
     return 0.0f;
   }
 
-  direction_pid.kp = LOSE_lINE_KP;
-  direction_pid.kd = LOSE_lINE_KD;
-  direction_pid.GKD = LOSE_LINE_GKD;
-
-  return Error_MAX;
-  // if(fabs(Error_MAX) > RIGHT_ANGLE_PHOTO_ERROR_LIMIT) // 判断是否达到直角转弯条件
-  // {
-  //   direction_pid.kp = LOSE_lINE_KP;
-  //   direction_pid.kd = LOSE_lINE_KD;
-  //   direction_pid.GKD = LOSE_LINE_GKD;
-  //   if(Error_MAX > 0.0f)
-  //   {
-  //     record_Error_MAX = PHOTO_ERROR_MAX;
-  //   }
-  //   else if(Error_MAX < 0.0f)
-  //   {
-  //     record_Error_MAX = PHOTO_ERROR_MIN;
-  //   }
-  //   return record_Error_MAX;
-  // }
-  // else
-  // {
-  //   direction_pid.kp = LOSE_lINE_KP;
-  //   direction_pid.kd = LOSE_lINE_KD;
-  //   direction_pid.GKD = LOSE_LINE_GKD;
-  //   return Error_MAX;
-  // }
+  if(fabs(Error_MAX) > RIGHT_ANGLE_PHOTO_ERROR_LIMIT) // 判断是否达到直角转弯条件
+  {
+    direction_pid.kp = RIGHT_ANGLE_TURN_KP;
+    direction_pid.kp2 = RIGHT_ANGLE_TURN_KP2;
+    direction_pid.kd = RIGHT_ANGLE_TURN_KD;
+    direction_pid.GKD = RIGHT_ANGLE_TURN_GKD;
+    if(Error_MAX > 0.0f)
+    {
+      record_Error_MAX = PHOTO_ERROR_MAX;
+    }
+    else if(Error_MAX < 0.0f)
+    {
+      record_Error_MAX = PHOTO_ERROR_MIN;
+    }
+    return record_Error_MAX;
+  }
+  else
+  {
+    direction_pid.kp = LOSE_lINE_KP;
+    direction_pid.kp2 = LOSE_lINE_KP2;
+    direction_pid.kd = LOSE_lINE_KD;
+    direction_pid.GKD = LOSE_LINE_GKD;
+    return Error_MAX;
+  }
 }
 
 int8_t If_on_roundabout(void) // 判断是否处于环岛模式函数
@@ -637,9 +638,10 @@ void Normal_mode(void) // 一般模式函数
   path_config.Cross_line_detected_times = 0; // 十字路口检测次数重置，防止上次使用时未置0的检测次数影响到下一次十字路口的连续帧判断
   
   // PID参数整定
-  direction_pid.kp = record_kp;  
-  direction_pid.kd = record_kd;
-  direction_pid.GKD = record_gkd;
+  direction_pid.kp = HIGH_SPEED_KP;  
+  direction_pid.kp2 = HIGH_SPEED_KP2;
+  direction_pid.kd = HIGH_SPEED_KD;
+  direction_pid.GKD = HIGH_SPEED_GKD;
 }
 
 float Roundabout_mode(void) // 环岛模式函数
@@ -652,9 +654,10 @@ float Roundabout_mode(void) // 环岛模式函数
   }
 
   // PID参数整定
-  direction_pid.kp = record_kp;
-  direction_pid.kd = record_kd;
-  direction_pid.GKD = record_gkd;
+  direction_pid.kp = HIGH_SPEED_KP;  
+  direction_pid.kp2 = HIGH_SPEED_KP2;
+  direction_pid.kd = HIGH_SPEED_KD;
+  direction_pid.GKD = HIGH_SPEED_GKD;
 
   roundabout_count++; // 完成一次对环岛标志的判断
   
@@ -674,9 +677,10 @@ void Cross_line_mode(void) // 十字路口模式函数
   current_mode = NORMAL_MODE;
 
   // PID参数整定
-  direction_pid.kp = record_kp;
-  direction_pid.kd = record_kd;
-  direction_pid.GKD = record_gkd;
+  direction_pid.kp = HIGH_SPEED_KP;  
+  direction_pid.kp2 = HIGH_SPEED_KP2;
+  direction_pid.kd = HIGH_SPEED_KD;
+  direction_pid.GKD = HIGH_SPEED_GKD;
   
   if(path_config.Cross_line_detected_times != -1)
   {
@@ -717,14 +721,21 @@ void Turn_control(void) // 转向环控制
     }
     else if(current_mode == READY_DOTTED_LINE_MODE) // 准备通过虚线情况
     {
-      direction_pid.kp = record_kp;  
-      direction_pid.kd = record_kd;
-      direction_pid.GKD = record_gkd;
+      direction_pid.kp = HIGH_SPEED_KP;  
+      direction_pid.kp2 = HIGH_SPEED_KP2;
+      direction_pid.kd = HIGH_SPEED_KD;
+      direction_pid.GKD = HIGH_SPEED_GKD;
     }
     else if(If_on_cross_line(photo_error)) // 十字路口情况
     {
       Cross_line_mode();
     } 
+    else if(current_mode == CONTINUOUS_TURN_MODE){
+      direction_pid.kp = LOW_SPEED_KP;
+      direction_pid.kp2 = LOW_SPEED_KP2;
+      direction_pid.kd = LOW_SPEED_KD;
+      direction_pid.GKD = LOW_SPEED_GKD;
+    }
     else // 一般情况
     {
       Normal_mode();
