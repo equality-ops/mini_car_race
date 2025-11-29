@@ -1034,9 +1034,9 @@ int main(void)
   while (1)
   {
     // 速度环pid调试输出
-    if(count % 1 ==0){
-      printf("%d %d %.3f %3.f %d %d %.3f\r\n", speed_pid_left.actual, speed_pid_right.actual, sensor_data.gyro_z_rate, Error_MAX, speed_pid_left.target, speed_pid_right.target,gyro_z);
-    }
+    // if(count % 1 ==0){
+    //   printf("%d %d %.3f %3.f %d %d %.3f\r\n", speed_pid_left.actual, speed_pid_right.actual, sensor_data.gyro_z_rate, Error_MAX, speed_pid_left.target, speed_pid_right.target,gyro_z);
+    // }
 
     //以下为陀螺仪使用示例
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
