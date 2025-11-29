@@ -97,8 +97,8 @@ typedef struct {
 #define FILTER_SIZE 5             // 微分滤波窗口数量
 #define FILTER_SIZE_ERROR 10     // 光电管误差滤波窗口数量
 #define HIGH_BASE_SPEED 90       // 高速基准速度
-#define READY_TURN_BASE_SPEED 60  // 准备直角转弯基准速度
-#define TURN_BASE_SPEED 55        // 直角转弯基准速度     
+#define READY_TURN_BASE_SPEED 65  // 准备直角转弯基准速度
+#define TURN_BASE_SPEED 50       // 直角转弯基准速度     
 
 #define LEFT_OUTPUTMAX 3600      // 左电机速度环输出最大值
 #define LEFT_OUTPUTMIN -3600     // 左电机速度环输出最小值
