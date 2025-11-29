@@ -2734,22 +2734,22 @@ Image Symbol Table
     get_aux_interface_config                 0x08006525   Thumb Code   230  bmi2.o(.text.get_aux_interface_config)
     [Anonymous Symbol]                       0x08006524   Section        0  bmi2.o(.text.get_aux_interface_config)
     [Anonymous Symbol]                       0x0800660c   Section        0  main.o(.text.main)
-    set_accel_config                         0x08006791   Thumb Code   360  bmi2.o(.text.set_accel_config)
-    [Anonymous Symbol]                       0x08006790   Section        0  bmi2.o(.text.set_accel_config)
-    set_config_load                          0x080068f9   Thumb Code   176  bmi2.o(.text.set_config_load)
-    [Anonymous Symbol]                       0x080068f8   Section        0  bmi2.o(.text.set_config_load)
-    set_gyro_config                          0x080069a9   Thumb Code   440  bmi2.o(.text.set_gyro_config)
-    [Anonymous Symbol]                       0x080069a8   Section        0  bmi2.o(.text.set_gyro_config)
-    upload_file                              0x08006b61   Thumb Code   272  bmi2.o(.text.upload_file)
-    [Anonymous Symbol]                       0x08006b60   Section        0  bmi2.o(.text.upload_file)
-    i.__scatterload_copy                     0x08006c70   Section       14  handlers.o(i.__scatterload_copy)
-    i.__scatterload_null                     0x08006c7e   Section        2  handlers.o(i.__scatterload_null)
-    i.__scatterload_zeroinit                 0x08006c80   Section       14  handlers.o(i.__scatterload_zeroinit)
-    .L__const.bmi2_sec_init.axes_remap       0x08006c8e   Data           6  bmi2.o(.rodata..L__const.bmi2_sec_init.axes_remap)
-    HAL_RCC_GetSysClockFreq.aPredivFactorTable 0x08006cac   Data           2  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
-    [Anonymous Symbol]                       0x08006cac   Section        0  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
-    HAL_RCC_GetSysClockFreq.aPLLMULFactorTable 0x08008cf6   Data          16  stm32f1xx_hal_rcc.o(.rodata.cst16)
-    [Anonymous Symbol]                       0x08008cf6   Section        0  stm32f1xx_hal_rcc.o(.rodata.cst16)
+    set_accel_config                         0x080067a5   Thumb Code   360  bmi2.o(.text.set_accel_config)
+    [Anonymous Symbol]                       0x080067a4   Section        0  bmi2.o(.text.set_accel_config)
+    set_config_load                          0x0800690d   Thumb Code   176  bmi2.o(.text.set_config_load)
+    [Anonymous Symbol]                       0x0800690c   Section        0  bmi2.o(.text.set_config_load)
+    set_gyro_config                          0x080069bd   Thumb Code   440  bmi2.o(.text.set_gyro_config)
+    [Anonymous Symbol]                       0x080069bc   Section        0  bmi2.o(.text.set_gyro_config)
+    upload_file                              0x08006b75   Thumb Code   272  bmi2.o(.text.upload_file)
+    [Anonymous Symbol]                       0x08006b74   Section        0  bmi2.o(.text.upload_file)
+    i.__scatterload_copy                     0x08006c84   Section       14  handlers.o(i.__scatterload_copy)
+    i.__scatterload_null                     0x08006c92   Section        2  handlers.o(i.__scatterload_null)
+    i.__scatterload_zeroinit                 0x08006c94   Section       14  handlers.o(i.__scatterload_zeroinit)
+    .L__const.bmi2_sec_init.axes_remap       0x08006ca2   Data           6  bmi2.o(.rodata..L__const.bmi2_sec_init.axes_remap)
+    HAL_RCC_GetSysClockFreq.aPredivFactorTable 0x08006cc0   Data           2  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
+    [Anonymous Symbol]                       0x08006cc0   Section        0  stm32f1xx_hal_rcc.o(.rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable)
+    HAL_RCC_GetSysClockFreq.aPLLMULFactorTable 0x08008d0a   Data          16  stm32f1xx_hal_rcc.o(.rodata.cst16)
+    [Anonymous Symbol]                       0x08008d0a   Section        0  stm32f1xx_hal_rcc.o(.rodata.cst16)
     .L_MergedGlobals                         0x20000000   Data          60  main.o(.data..L_MergedGlobals)
     [Anonymous Symbol]                       0x20000000   Section        0  main.o(.data..L_MergedGlobals)
     .L_MergedGlobals                         0x2000003c   Data           8  stm32f1xx_hal.o(.data..L_MergedGlobals)
@@ -3021,17 +3021,17 @@ Image Symbol Table
     bmi2_write_config_file                   0x080062e1   Thumb Code   416  bmi2.o(.text.bmi2_write_config_file)
     dodo_BMI270_get_data                     0x08006481   Thumb Code    86  dodo_bmi270.o(.text.dodo_BMI270_get_data)
     dodo_BMI270_init                         0x080064d9   Thumb Code    74  dodo_bmi270.o(.text.dodo_BMI270_init)
-    main                                     0x0800660d   Thumb Code   386  main.o(.text.main)
-    __scatterload_copy                       0x08006c71   Thumb Code    14  handlers.o(i.__scatterload_copy)
-    __scatterload_null                       0x08006c7f   Thumb Code     2  handlers.o(i.__scatterload_null)
-    __scatterload_zeroinit                   0x08006c81   Thumb Code    14  handlers.o(i.__scatterload_zeroinit)
-    AHBPrescTable                            0x08006c94   Data          16  system_stm32f1xx.o(.rodata.AHBPrescTable)
-    APBPrescTable                            0x08006ca4   Data           8  system_stm32f1xx.o(.rodata.APBPrescTable)
-    bmi270_config_file                       0x08006cae   Data        8192  bmi270.o(.rodata.bmi270_config_file)
-    bmi270_feat_in                           0x08008cae   Data          51  bmi270.o(.rodata.bmi270_feat_in)
-    bmi270_feat_out                          0x08008ce1   Data          21  bmi270.o(.rodata.bmi270_feat_out)
-    Region$$Table$$Base                      0x08008d08   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x08008d28   Number         0  anon$$obj.o(Region$$Table)
+    main                                     0x0800660d   Thumb Code   406  main.o(.text.main)
+    __scatterload_copy                       0x08006c85   Thumb Code    14  handlers.o(i.__scatterload_copy)
+    __scatterload_null                       0x08006c93   Thumb Code     2  handlers.o(i.__scatterload_null)
+    __scatterload_zeroinit                   0x08006c95   Thumb Code    14  handlers.o(i.__scatterload_zeroinit)
+    AHBPrescTable                            0x08006ca8   Data          16  system_stm32f1xx.o(.rodata.AHBPrescTable)
+    APBPrescTable                            0x08006cb8   Data           8  system_stm32f1xx.o(.rodata.APBPrescTable)
+    bmi270_config_file                       0x08006cc2   Data        8192  bmi270.o(.rodata.bmi270_config_file)
+    bmi270_feat_in                           0x08008cc2   Data          51  bmi270.o(.rodata.bmi270_feat_in)
+    bmi270_feat_out                          0x08008cf5   Data          21  bmi270.o(.rodata.bmi270_feat_out)
+    Region$$Table$$Base                      0x08008d1c   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x08008d3c   Number         0  anon$$obj.o(Region$$Table)
     path_config                              0x20000000   Data          12  main.o(.data..L_MergedGlobals)
     robot_config                             0x2000000c   Data          24  main.o(.data..L_MergedGlobals)
     pose                                     0x20000024   Data          24  main.o(.data..L_MergedGlobals)
@@ -3081,9 +3081,9 @@ Memory Map of the image
 
   Image Entry point : 0x080000ed
 
-  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00008da0, Max: 0x00010000, ABSOLUTE)
+  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00008db8, Max: 0x00010000, ABSOLUTE)
 
-    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00008d28, Max: 0x00010000, ABSOLUTE)
+    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00008d3c, Max: 0x00010000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -3332,49 +3332,49 @@ Memory Map of the image
     0x08006522   0x08006522   0x00000002   PAD
     0x08006524   0x08006524   0x000000e6   Code   RO         1320    .text.get_aux_interface_config  bmi2.o
     0x0800660a   0x0800660a   0x00000002   PAD
-    0x0800660c   0x0800660c   0x00000182   Code   RO           67    .text.main          main.o
-    0x0800678e   0x0800678e   0x00000002   PAD
-    0x08006790   0x08006790   0x00000168   Code   RO         1170    .text.set_accel_config  bmi2.o
-    0x080068f8   0x080068f8   0x000000b0   Code   RO         1316    .text.set_config_load  bmi2.o
-    0x080069a8   0x080069a8   0x000001b8   Code   RO         1172    .text.set_gyro_config  bmi2.o
-    0x08006b60   0x08006b60   0x00000110   Code   RO         1318    .text.upload_file   bmi2.o
-    0x08006c70   0x08006c70   0x0000000e   Code   RO         1503    i.__scatterload_copy  mc_w.l(handlers.o)
-    0x08006c7e   0x08006c7e   0x00000002   Code   RO         1504    i.__scatterload_null  mc_w.l(handlers.o)
-    0x08006c80   0x08006c80   0x0000000e   Code   RO         1505    i.__scatterload_zeroinit  mc_w.l(handlers.o)
-    0x08006c8e   0x08006c8e   0x00000006   Data   RO         1330    .rodata..L__const.bmi2_sec_init.axes_remap  bmi2.o
-    0x08006c94   0x08006c94   0x00000010   Data   RO         1130    .rodata.AHBPrescTable  system_stm32f1xx.o
-    0x08006ca4   0x08006ca4   0x00000008   Data   RO         1131    .rodata.APBPrescTable  system_stm32f1xx.o
-    0x08006cac   0x08006cac   0x00000002   Data   RO          442    .rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable  stm32f1xx_hal_rcc.o
-    0x08006cae   0x08006cae   0x00002000   Data   RO         1357    .rodata.bmi270_config_file  bmi270.o
-    0x08008cae   0x08008cae   0x00000033   Data   RO         1358    .rodata.bmi270_feat_in  bmi270.o
-    0x08008ce1   0x08008ce1   0x00000015   Data   RO         1359    .rodata.bmi270_feat_out  bmi270.o
-    0x08008cf6   0x08008cf6   0x00000010   Data   RO          441    .rodata.cst16       stm32f1xx_hal_rcc.o
-    0x08008d06   0x08008d06   0x00000002   PAD
-    0x08008d08   0x08008d08   0x00000020   Data   RO         1502    Region$$Table       anon$$obj.o
+    0x0800660c   0x0800660c   0x00000196   Code   RO           67    .text.main          main.o
+    0x080067a2   0x080067a2   0x00000002   PAD
+    0x080067a4   0x080067a4   0x00000168   Code   RO         1170    .text.set_accel_config  bmi2.o
+    0x0800690c   0x0800690c   0x000000b0   Code   RO         1316    .text.set_config_load  bmi2.o
+    0x080069bc   0x080069bc   0x000001b8   Code   RO         1172    .text.set_gyro_config  bmi2.o
+    0x08006b74   0x08006b74   0x00000110   Code   RO         1318    .text.upload_file   bmi2.o
+    0x08006c84   0x08006c84   0x0000000e   Code   RO         1503    i.__scatterload_copy  mc_w.l(handlers.o)
+    0x08006c92   0x08006c92   0x00000002   Code   RO         1504    i.__scatterload_null  mc_w.l(handlers.o)
+    0x08006c94   0x08006c94   0x0000000e   Code   RO         1505    i.__scatterload_zeroinit  mc_w.l(handlers.o)
+    0x08006ca2   0x08006ca2   0x00000006   Data   RO         1330    .rodata..L__const.bmi2_sec_init.axes_remap  bmi2.o
+    0x08006ca8   0x08006ca8   0x00000010   Data   RO         1130    .rodata.AHBPrescTable  system_stm32f1xx.o
+    0x08006cb8   0x08006cb8   0x00000008   Data   RO         1131    .rodata.APBPrescTable  system_stm32f1xx.o
+    0x08006cc0   0x08006cc0   0x00000002   Data   RO          442    .rodata.HAL_RCC_GetSysClockFreq.aPredivFactorTable  stm32f1xx_hal_rcc.o
+    0x08006cc2   0x08006cc2   0x00002000   Data   RO         1357    .rodata.bmi270_config_file  bmi270.o
+    0x08008cc2   0x08008cc2   0x00000033   Data   RO         1358    .rodata.bmi270_feat_in  bmi270.o
+    0x08008cf5   0x08008cf5   0x00000015   Data   RO         1359    .rodata.bmi270_feat_out  bmi270.o
+    0x08008d0a   0x08008d0a   0x00000010   Data   RO          441    .rodata.cst16       stm32f1xx_hal_rcc.o
+    0x08008d1a   0x08008d1a   0x00000002   PAD
+    0x08008d1c   0x08008d1c   0x00000020   Data   RO         1502    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08008d28, Size: 0x00002930, Max: 0x00005000, ABSOLUTE)
+    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08008d40, Size: 0x00002930, Max: 0x00005000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x20000000   0x08008d28   0x0000003c   Data   RW           82    .data..L_MergedGlobals  main.o
-    0x2000003c   0x08008d64   0x00000008   Data   RW          404    .data..L_MergedGlobals  stm32f1xx_hal.o
-    0x20000044   0x08008d6c   0x00000008   Data   RW         1401    .data.BMI270_transition_factor  dodo_bmi270.o
-    0x2000004c   0x08008d74   0x00000004   Data   RW         1129    .data.SystemCoreClock  system_stm32f1xx.o
-    0x20000050   0x08008d78   0x00000010   Data   RW         1360    .data.bmi270_map_int  bmi270.o
-    0x20000060   0x08008d88   0x00000018   Data   RW           74    .data.photo_error_weight  main.o
+    0x20000000   0x08008d40   0x0000003c   Data   RW           82    .data..L_MergedGlobals  main.o
+    0x2000003c   0x08008d7c   0x00000008   Data   RW          404    .data..L_MergedGlobals  stm32f1xx_hal.o
+    0x20000044   0x08008d84   0x00000008   Data   RW         1401    .data.BMI270_transition_factor  dodo_bmi270.o
+    0x2000004c   0x08008d8c   0x00000004   Data   RW         1129    .data.SystemCoreClock  system_stm32f1xx.o
+    0x20000050   0x08008d90   0x00000010   Data   RW         1360    .data.bmi270_map_int  bmi270.o
+    0x20000060   0x08008da0   0x00000018   Data   RW           74    .data.photo_error_weight  main.o
     0x20000078        -       0x00000008   Zero   RW         1388    .bss..L_MergedGlobals  bmi270_port.o
     0x20000080        -       0x00000060   Zero   RW         1403    .bss..L_MergedGlobals  dodo_bmi270.o
     0x200000e0        -       0x0000006c   Zero   RW           83    .bss..L_MergedGlobals.1  main.o
     0x2000014c        -       0x00000070   Zero   RW           84    .bss..L_MergedGlobals.2  main.o
     0x200001bc        -       0x00000068   Zero   RW           85    .bss..L_MergedGlobals.3  main.o
-    0x20000224   0x08008da0   0x00000004   PAD
+    0x20000224   0x08008db8   0x00000004   PAD
     0x20000228        -       0x00000068   Zero   RW         1402    .bss.bmi270         dodo_bmi270.o
     0x20000290        -       0x00000800   Zero   RW         1386    .bss.bmi2_spi_read.rx_buf  bmi270_port.o
     0x20000a90        -       0x00000800   Zero   RW         1385    .bss.bmi2_spi_read.tx_buf  bmi270_port.o
     0x20001290        -       0x00001000   Zero   RW         1387    .bss.bmi2_spi_write.tx_buf  bmi270_port.o
     0x20002290        -       0x00000002   Zero   RW           73    .bss.buf_index_error  main.o
-    0x20002292   0x08008da0   0x00000002   PAD
+    0x20002292   0x08008db8   0x00000002   PAD
     0x20002294        -       0x00000050   Zero   RW           75    .bss.diff_buffer_photo_error  main.o
     0x200022e4        -       0x00000044   Zero   RW          119    .bss.hdma_spi1_rx   spi.o
     0x20002328        -       0x00000044   Zero   RW          120    .bss.hdma_spi1_tx   spi.o
@@ -3401,7 +3401,7 @@ Image component sizes
         68          0          0          0          0       2230   dma.o
        160          0          0          8        200       4033   dodo_bmi270.o
        292          0          0          0          0       1744   gpio.o
-      3948          0          0         84        406      19009   main.o
+      3968          0          0         84        406      19015   main.o
        210          0          0          0          0       2892   multiplexer.o
        314          0          0          0        224       5594   spi.o
         36          8        236          0       1024        840   startup_stm32f103xb.o
@@ -3421,7 +3421,7 @@ Image component sizes
        198          0          0          0         72       5496   usart.o
 
     ----------------------------------------------------------------------
-     25596        272       8582        120      10424     511262   Object Totals
+     25616        272       8582        120      10424     511268   Object Totals
          0          0         32          0          0          0   (incl. Generated)
        150          0          2          0          6          0   (incl. Padding)
 
@@ -3487,15 +3487,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     27554        288       8582        120      10424     512022   Grand Totals
-     27554        288       8582        120      10424     512022   ELF Image Totals
-     27554        288       8582        120          0          0   ROM Totals
+     27574        288       8582        120      10424     512028   Grand Totals
+     27574        288       8582        120      10424     512028   ELF Image Totals
+     27574        288       8582        120          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                36136 (  35.29kB)
+    Total RO  Size (Code + RO Data)                36156 (  35.31kB)
     Total RW  Size (RW Data + ZI Data)             10544 (  10.30kB)
-    Total ROM Size (Code + RO Data + RW Data)      36256 (  35.41kB)
+    Total ROM Size (Code + RO Data + RW Data)      36276 (  35.43kB)
 
 ==============================================================================
 
