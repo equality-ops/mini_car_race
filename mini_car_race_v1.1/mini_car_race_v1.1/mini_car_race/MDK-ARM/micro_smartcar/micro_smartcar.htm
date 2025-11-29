@@ -3,7 +3,7 @@
 <title>Static Call Graph - [micro_smartcar\micro_smartcar.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image micro_smartcar\micro_smartcar.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Sat Nov 29 22:36:26 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Sat Nov 29 23:07:37 2025
 <BR><P>
 <H3>Maximum Stack Usage =        712 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -494,7 +494,7 @@ Global Symbols
 <LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Turn_control
 </UL>
 
-<P><STRONG><a name="[62]"></a>Compute_target</STRONG> (Thumb, 522 bytes, Stack size 24 bytes, main.o(.text.Compute_target))
+<P><STRONG><a name="[62]"></a>Compute_target</STRONG> (Thumb, 534 bytes, Stack size 24 bytes, main.o(.text.Compute_target))
 <BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = Compute_target &rArr; __aeabi_fsub &rArr; __aeabi_fadd &rArr; _float_epilogue
 </UL>
 <BR>[Calls]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
@@ -538,7 +538,7 @@ Global Symbols
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_SPI1_Init
 </UL>
 
-<P><STRONG><a name="[64]"></a>FindMax_WeightedValue</STRONG> (Thumb, 310 bytes, Stack size 24 bytes, main.o(.text.FindMax_WeightedValue))
+<P><STRONG><a name="[64]"></a>FindMax_WeightedValue</STRONG> (Thumb, 530 bytes, Stack size 24 bytes, main.o(.text.FindMax_WeightedValue))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = FindMax_WeightedValue &rArr; __aeabi_fmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[55]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2f
@@ -1104,8 +1104,8 @@ Global Symbols
 <P><STRONG><a name="[6]"></a>SVC_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(.text.SVC_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[8b]"></a>Speed_Control</STRONG> (Thumb, 190 bytes, Stack size 24 bytes, main.o(.text.Speed_Control))
-<BR><BR>[Stack]<UL><LI>Max Depth = 92<LI>Call Chain = Speed_Control &rArr; ComeputePID_Position &rArr; __aeabi_fsub &rArr; __aeabi_fadd &rArr; _float_epilogue
+<P><STRONG><a name="[8b]"></a>Speed_Control</STRONG> (Thumb, 176 bytes, Stack size 16 bytes, main.o(.text.Speed_Control))
+<BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = Speed_Control &rArr; ComeputePID_Position &rArr; __aeabi_fsub &rArr; __aeabi_fadd &rArr; _float_epilogue
 </UL>
 <BR>[Calls]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
 <LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ComeputePID_Position
@@ -1142,8 +1142,8 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[8a]"></a>Turn_control</STRONG> (Thumb, 558 bytes, Stack size 24 bytes, main.o(.text.Turn_control))
-<BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = Turn_control &rArr; Calculate_Photo_Error &rArr; MUX_get_value
+<P><STRONG><a name="[8a]"></a>Turn_control</STRONG> (Thumb, 510 bytes, Stack size 32 bytes, main.o(.text.Turn_control))
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = Turn_control &rArr; Calculate_Photo_Error &rArr; MUX_get_value
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dcmpge
 <LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Cross_line_mode
