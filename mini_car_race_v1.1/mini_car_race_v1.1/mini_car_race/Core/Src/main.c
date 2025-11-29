@@ -141,6 +141,8 @@ typedef struct {
 #define RIGHT_MOTOR 1              // 右电机标志
 #define TURN 0                     // 转向环标志
 
+#define GYTOZ_0_ERROR 0.1177       // 陀螺仪零漂误差
+
 #define START_RIGHT_ANGLE_MODE 1      // 进入直角转弯模式标志
 #define EXIT_RIGHT_ANGLE_MODE 0       // 退出直角转弯模式标志
 #define READY_RIGHT_ANGLE_MODE 2      // 准备进入直角转弯模式标志
@@ -220,7 +222,7 @@ void SystemClock_Config(void);
 float filtered_gyro_z(float raw_gyro_z)
 { // 陀螺仪数据滤波函数
   // 更新滑动窗口
-  diff_buffer_gyro_z[buf_index_gyro_z] = raw_gyro_z;
+  diff_buffer_gyro_z[buf_index_gyro_z] = raw_gyro_z - GYTOZ_0_ERROR;
   buf_index_gyro_z = (buf_index_gyro_z + 1) % FILTER_SIZE;
   // 计算平均值
   int16_t i = 0;
@@ -554,7 +556,7 @@ void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.12f;
   direction_pid.kp2 = 0.0003f;
-  direction_pid.ki = 0.0f;
+  direction_pid.ki = 0.1f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.25f;
   direction_pid.A = 800.0f;
@@ -1040,10 +1042,10 @@ int main(void)
     dodo_BMI270_get_data(); // 调用此函数会更新陀螺仪数据
     gyro_z=BMI270_gyro_transition(BMI270_gyro_z); // 将原始陀螺仪数据转换为物理值，单位为度每秒
     
-    if(count % 10 == 0)
-    {
-      printf("%f\r\n",Error_MAX); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
-    }
+    // if(count % 10 == 0)
+    // {
+    //   printf("%f\r\n",gyro_z); // 输出当前模式，测试是否成功启动，正常使用时不需要这行代码
+    // }
 
     //  if(count % 200){
     //   printf("%f\r\n",gyro_z);//输出陀螺仪读数，测试是否成功启动，正常使用时不需要这行代码
