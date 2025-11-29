@@ -116,9 +116,9 @@ typedef struct {
 #define RIGHT_ANGLE_TURN_KP 0.4f   // 直角转弯时的kp值
 #define RIGHT_ANGLE_TURN_KD 0.0f   // 直角转弯时的kd值
 #define RIGHT_ANGLE_TURN_GKD -0.23f  // 直角转弯时的GKD值
-#define LOSE_lINE_KP 0.12f          // 丢线时的kp值
+#define LOSE_lINE_KP 0.3f          // 丢线时的kp值
 #define LOSE_lINE_KD 0.0f          // 丢线时的kd值
-#define LOSE_LINE_GKD -0.2f         // 丢线时的gkd值
+#define LOSE_LINE_GKD -0.25f         // 丢线时的gkd值
 #define RESTORE_KP 0.1f             // 恢复模式的kp值
 #define RESTORE_KD 0.03f            // 恢复模式的kd值
 
@@ -556,7 +556,7 @@ void PID_Init(void)
 { // 初始化PID参数
   direction_pid.kp = 0.12f;
   direction_pid.kp2 = 0.0003f;
-  direction_pid.ki = 0.0f;
+  direction_pid.ki = 0.0001f;
   direction_pid.kd = 0.0f;
   direction_pid.GKD = -0.25f;
   direction_pid.A = 800.0f;
